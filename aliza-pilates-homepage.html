@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aliza Pilates Studio — Panama City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --greige: #C8C4B7;
+      --greige-light: #E8E4D9;
+      --greige-dark: #A8A49A;
+      --charcoal: #8B8578;
+      --charcoal-dark: #5C5A55;
+      --cream: #F7F5F0;
+      --white: #FFFFFF;
+      --text-dark: #3A3935;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      color: var(--text-dark);
+      background: var(--cream);
+      overflow-x: hidden;
+    }
+
+    /* ───── NAV ───── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      background: rgba(247, 245, 240, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(200, 196, 183, 0.3);
+      transition: padding 0.3s ease;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .nav-logo img {
+      height: 48px;
+      width: auto;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--charcoal-dark);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text-dark); }
+
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: none;
+      border: 1px solid var(--greige-dark);
+      border-radius: 20px;
+      padding: 0.3rem 0.9rem;
+      cursor: pointer;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--charcoal-dark);
+      transition: all 0.2s;
+    }
+
+    .lang-toggle:hover {
+      background: var(--greige-light);
+    }
+
+    /* ───── HERO ───── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+      background: linear-gradient(160deg, var(--cream) 0%, var(--greige-light) 100%);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: rgba(200, 196, 183, 0.15);
+      top: -100px;
+      right: -150px;
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(200, 196, 183, 0.1);
+      bottom: -80px;
+      left: -80px;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      animation: fadeUp 1.2s ease both;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-logo {
+      width: 160px;
+      height: auto;
+      margin: 0 auto 2rem;
+      display: block;
+      opacity: 0.9;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--charcoal-dark);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--charcoal);
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--charcoal);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      margin-bottom: 3rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-cta {
+      display: inline-block;
+      padding: 1rem 2.8rem;
+      background: var(--charcoal-dark);
+      color: var(--white);
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+
+    .hero-cta:hover {
+      background: var(--text-dark);
+    }
+
+    .hero-badge {
+      position: absolute;
+      right: 8%;
+      bottom: 12%;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: var(--charcoal-dark);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: fadeUp 1.4s 0.3s ease both;
+    }
+
+    .hero-badge span:first-child {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 300;
+      line-height: 1;
+    }
+
+    .hero-badge span:last-child {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    /* ───── SECTION BASICS ───── */
+    section { padding: 7rem 4rem; }
+
+    .section-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--charcoal-dark);
+    }
+
+    .section-title em { font-style: italic; }
+
+    .divider {
+      width: 50px;
+      height: 1px;
+      background: var(--greige-dark);
+      margin: 1.8rem 0;
+    }
+
+    /* ───── ABOUT ───── */
+    .about {
+      background: var(--white);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .about-text p {
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+      margin-bottom: 1.4rem;
+    }
+
+    .about-pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .pillar {
+      padding: 1.8rem;
+      background: var(--cream);
+      border-left: 2px solid var(--greige);
+    }
+
+    .pillar h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--charcoal-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .pillar p {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--charcoal);
+    }
+
+    /* ───── QUOTE ───── */
+    .quote-section {
+      background: var(--charcoal-dark);
+      text-align: center;
+      padding: 6rem 4rem;
+    }
+
+    .quote-section blockquote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--greige-light);
+      line-height: 1.5;
+      max-width: 850px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .quote-section cite {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      font-style: normal;
+    }
+
+    /* ───── FOUNDER ───── */
+    .founder {
+      background: var(--cream);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .founder-visual {
+      background: var(--greige-light);
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .founder-visual-placeholder {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .founder-visual-placeholder img {
+      width: 120px;
+      opacity: 0.4;
+    }
+
+    .founder-visual-placeholder p {
+      font-size: 0.75rem;
+      color: var(--charcoal);
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+    }
+
+    .founder-text p {
+      font-size: 0.97rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+      margin-bottom: 1.2rem;
+    }
+
+    .credentials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.5rem;
+    }
+
+    .credential-tag {
+      padding: 0.4rem 1rem;
+      border: 1px solid var(--greige-dark);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+    }
+
+    /* ───── BOOKING CTA ───── */
+    .booking-cta {
+      background: var(--greige-light);
+      text-align: center;
+      padding: 6rem 4rem;
+    }
+
+    .booking-cta h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 300;
+      color: var(--charcoal-dark);
+      margin-bottom: 1rem;
+    }
+
+    .booking-cta p {
+      font-size: 0.95rem;
+      color: var(--charcoal);
+      margin-bottom: 2.5rem;
+      letter-spacing: 0.03em;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 1rem 2.8rem;
+      background: var(--charcoal-dark);
+      color: var(--white);
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: all 0.3s;
+      margin: 0 0.5rem;
+    }
+
+    .btn-primary:hover { background: var(--text-dark); }
+
+    .btn-outline {
+      display: inline-block;
+      padding: 1rem 2.8rem;
+      border: 1px solid var(--charcoal-dark);
+      color: var(--charcoal-dark);
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: all 0.3s;
+      margin: 0 0.5rem;
+    }
+
+    .btn-outline:hover {
+      background: var(--charcoal-dark);
+      color: var(--white);
+    }
+
+    /* ───── INSTAGRAM ───── */
+    .instagram-section {
+      background: var(--white);
+      padding: 6rem 4rem;
+    }
+
+    .instagram-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .instagram-header a {
+      color: var(--charcoal);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+    }
+
+    .instagram-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+
+    .insta-placeholder {
+      aspect-ratio: 1;
+      background: var(--greige-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .insta-placeholder:hover { opacity: 0.85; }
+
+    .insta-icon {
+      font-size: 1.5rem;
+      opacity: 0.2;
+      color: var(--charcoal-dark);
+    }
+
+    .insta-label {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(58, 57, 53, 0.75);
+      color: white;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      padding: 0.5rem;
+      text-align: center;
+      transform: translateY(100%);
+      transition: transform 0.25s;
+    }
+
+    .insta-placeholder:hover .insta-label { transform: translateY(0); }
+
+    /* ───── CONTACT / FOOTER ───── */
+    .contact {
+      background: var(--charcoal-dark);
+      padding: 5rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .contact-block h4 {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      margin-bottom: 1rem;
+    }
+
+    .contact-block p,
+    .contact-block a {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--greige-light);
+      text-decoration: none;
+    }
+
+    .contact-block a:hover { color: var(--white); }
+
+    footer {
+      background: var(--text-dark);
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--greige-dark);
+    }
+
+    /* ───── ANIMATIONS ───── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ───── LANGUAGE HIDDEN ───── */
+    [data-lang="es"] { display: none; }
+    body.es [data-lang="en"] { display: none; }
+    body.es [data-lang="es"] { display: block; }
+    body.es span[data-lang="es"] { display: inline; }
+
+    /* ───── RESPONSIVE ───── */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      .about, .founder { grid-template-columns: 1fr; gap: 3rem; }
+      .about-pillars { grid-template-columns: 1fr; }
+      .instagram-grid { grid-template-columns: repeat(2, 1fr); }
+      .contact { grid-template-columns: 1fr; gap: 2rem; }
+      .hero-badge { display: none; }
+    }
+  </style>
+</head>
+<body class="es">
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <img src="logo-white-bg.jpeg" alt="Aliza Pilates Studio" onerror="this.style.display='none'" />
+    </div>
+    <ul class="nav-links">
+      <li><a href="#about" data-lang="en">About</a><a href="#about" data-lang="es">Nosotros</a></li>
+      <li><a href="#founder" data-lang="en">Our Founder</a><a href="#founder" data-lang="es">Fundadora</a></li>
+      <li><a href="#booking" data-lang="en">Book a Class</a><a href="#booking" data-lang="es">Reservar</a></li>
+      <li><a href="#contact" data-lang="en">Contact</a><a href="#contact" data-lang="es">Contacto</a></li>
+    </ul>
+    <button class="lang-toggle" onclick="toggleLang(this)">
+      <span class="lang-label">EN</span>
+    </button>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="hero-eyebrow">
+        <span data-lang="en">Panama City, Panama</span>
+        <span data-lang="es">Ciudad de Panamá, Panamá</span>
+      </p>
+      <h1 data-lang="en">Move with <em>purpose.</em><br>Live with strength.</h1>
+      <h1 data-lang="es">Muévete con <em>propósito.</em><br>Vive con fuerza.</h1>
+      <p class="hero-sub" data-lang="en">Personalized Pilates training in the original Joseph Pilates method. Private classes with certified instructors in the heart of Paitilla.</p>
+      <p class="hero-sub" data-lang="es">Entrenamiento personalizado de Pilates en el método original de Joseph Pilates. Clases privadas con instructores certificados en el corazón de Paitilla.</p>
+      <a href="#booking" class="hero-cta" data-lang="en">Reserve Your Class</a>
+      <a href="#booking" class="hero-cta" data-lang="es">Reserva Tu Clase</a>
+    </div>
+    <div class="hero-badge">
+      <span>25</span>
+      <span data-lang="en">Years of Excellence</span>
+      <span data-lang="es">Años de Excelencia</span>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="about-text fade-in">
+      <p class="section-label" data-lang="en">What is Pilates</p>
+      <p class="section-label" data-lang="es">Qué es Pilates</p>
+      <h2 class="section-title" data-lang="en">A complete system for <em>body and mind</em></h2>
+      <h2 class="section-title" data-lang="es">Un sistema completo para <em>cuerpo y mente</em></h2>
+      <div class="divider"></div>
+      <p data-lang="en">Pilates is a physical conditioning method developed over seventy years ago by Joseph H. Pilates. Unlike other disciplines that isolate certain muscle groups, Pilates works the body as a complete system — emphasizing correct spinal alignment and controlled breathing.</p>
+      <p data-lang="es">Pilates es un método de acondicionamiento físico desarrollado hace más de setenta años por Joseph H. Pilates. A diferencia de otras disciplinas que trabajan músculos de forma aislada, Pilates trabaja el cuerpo como un sistema completo, insistiendo en la alineación corporal y la respiración controlada.</p>
+      <p data-lang="en">Daily activities and sports develop certain muscle groups while leaving others behind. Pilates corrects these imbalances — eliminating the tension, fatigue, discomfort and pain they can cause.</p>
+      <p data-lang="es">Las actividades diarias y el deporte desarrollan ciertos grupos musculares dejando otros en el olvido. Pilates corrige estos desequilibrios, eliminando la tensión, la fatiga, el dolor y la incomodidad que pueden generar.</p>
+    </div>
+    <div class="about-pillars fade-in">
+      <div class="pillar">
+        <h4 data-lang="en">Concentration</h4>
+        <h4 data-lang="es">Concentración</h4>
+        <p data-lang="en">Every movement performed with full awareness and intention.</p>
+        <p data-lang="es">Cada movimiento realizado con plena conciencia e intención.</p>
+      </div>
+      <div class="pillar">
+        <h4 data-lang="en">Control</h4>
+        <h4 data-lang="es">Control</h4>
+        <p data-lang="en">Mastery over your body so it no longer dominates you.</p>
+        <p data-lang="es">El dominio sobre tu cuerpo para que no te domine a ti.</p>
+      </div>
+      <div class="pillar">
+        <h4 data-lang="en">Precision</h4>
+        <h4 data-lang="es">Precisión</h4>
+        <p data-lang="en">Quality over quantity — each movement counts.</p>
+        <p data-lang="es">Calidad sobre cantidad — cada movimiento importa.</p>
+      </div>
+      <div class="pillar">
+        <h4 data-lang="en">Breathing</h4>
+        <h4 data-lang="es">Respiración</h4>
+        <p data-lang="en">The breath connects mind and body for a truly effective workout.</p>
+        <p data-lang="es">La respiración conecta la mente con el cuerpo para un trabajo eficaz.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUOTE -->
+  <section class="quote-section">
+    <blockquote>
+      "Te sentirás mejor en 10 sesiones, te verás mejor en 20 sesiones, y tendrás un cuerpo completamente nuevo en 30 sesiones."
+    </blockquote>
+    <cite>— Joseph Pilates</cite>
+  </section>
+
+  <!-- FOUNDER -->
+  <section class="founder" id="founder">
+    <div class="founder-visual">
+      <div class="founder-visual-placeholder">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--charcoal);font-style:italic;">Aliza Cohen</p>
+        <p style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--greige-dark);margin-top:0.5rem;" data-lang="en">Founder & Director</p>
+        <p style="font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--greige-dark);margin-top:0.5rem;" data-lang="es">Fundadora y Directora</p>
+        <p style="font-size:0.72rem;color:var(--greige-dark);margin-top:1.5rem;" data-lang="en">Photo coming soon</p>
+        <p style="font-size:0.72rem;color:var(--greige-dark);margin-top:1.5rem;" data-lang="es">Foto próximamente</p>
+      </div>
+    </div>
+    <div class="founder-text fade-in">
+      <p class="section-label" data-lang="en">Our Founder</p>
+      <p class="section-label" data-lang="es">Nuestra Fundadora</p>
+      <h2 class="section-title" data-lang="en"><em>Aliza Cohen</em></h2>
+      <h2 class="section-title" data-lang="es"><em>Aliza Cohen</em></h2>
+      <div class="divider"></div>
+      <p data-lang="en">Aliza began her dance studies at just five years old, competing across Peru, Argentina and Panama. She earned her Bachelor of Arts in Dance Education and Performance from Goucher College in Baltimore, and has trained with internationally renowned choreographers in London, Costa Rica, Canada and the United States.</p>
+      <p data-lang="es">Aliza inició sus estudios de danza a los cinco años, participando en concursos en Perú, Argentina y Panamá. Obtuvo su Licenciatura en Dance Education y Dance Performance en Goucher College, Baltimore, y se ha formado con coreógrafos de renombre internacional en Londres, Costa Rica, Canadá y Estados Unidos.</p>
+      <p data-lang="en">In 1998, Aliza discovered Pilates after dislocating her knee — a turning point that would define her life's work. She turned to the method to rebuild her strength and mobility, and it not only allowed her to fully recover, but to continue and thrive in her dancing career. She was so transformed by the experience that she committed to sharing it with others, becoming fully certified by the year 2000.</p>
+      <p data-lang="es">En 1998, Aliza descubrió el Pilates tras dislocarse la rodilla — un momento decisivo que definiría su vocación. Se volcó en el método para recuperar su fuerza y movilidad, y no solo logró una recuperación completa, sino que pudo continuar y florecer en su carrera como bailarina. Su transformación fue tan profunda que decidió compartirla con otros, obteniendo su certificación completa en el año 2000.</p>
+      <p data-lang="en">Her Pilates certification comes from the most prestigious lineage in the discipline — Romana's Kryzanowska Teacher Training Program in New York, the direct successor to Joseph Pilates himself. She has taught Pilates in Los Angeles and New York before bringing her expertise home to Panama.</p>
+      <p data-lang="es">Su certificación en Pilates proviene del linaje más prestigioso de la disciplina: el Romana's Kryzanowska Teacher Training Program en Nueva York, sucesor directo del propio Joseph Pilates. Ha enseñado Pilates en Los Ángeles y Nueva York antes de traer su expertise a Panamá.</p>
+      <div class="credentials">
+        <span class="credential-tag" data-lang="en">Romana's Certified</span>
+        <span class="credential-tag" data-lang="es">Certificada Romana's</span>
+        <span class="credential-tag" data-lang="en">B.A. Dance — Goucher College</span>
+        <span class="credential-tag" data-lang="es">Lic. Danza — Goucher College</span>
+        <span class="credential-tag" data-lang="en">Certified Since 2000</span>
+        <span class="credential-tag" data-lang="es">Certificada desde el 2000</span>
+        <span class="credential-tag" data-lang="en">25+ Years Experience</span>
+        <span class="credential-tag" data-lang="es">25+ Años de Experiencia</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING CTA -->
+  <section class="booking-cta" id="booking">
+    <p class="section-label" data-lang="en">Reserve Your Spot</p>
+    <p class="section-label" data-lang="es">Reserva Tu Lugar</p>
+    <h2 data-lang="en">Ready to begin your <em>Pilates journey?</em></h2>
+    <h2 data-lang="es">¿Lista para comenzar tu <em>camino en Pilates?</em></h2>
+    <p data-lang="en">Classes are private and personalized. Book directly with any of our certified instructors.</p>
+    <p data-lang="es">Las clases son privadas y personalizadas. Reserva directamente con cualquiera de nuestros instructores certificados.</p>
+    <a href="#" class="btn-primary" data-lang="en">Book a Class</a>
+    <a href="#" class="btn-primary" data-lang="es">Reservar Clase</a>
+    <a href="#contact" class="btn-outline" data-lang="en">Contact Us</a>
+    <a href="#contact" class="btn-outline" data-lang="es">Contáctanos</a>
+  </section>
+
+  <!-- INSTAGRAM -->
+  <section class="instagram-section">
+    <div class="instagram-header fade-in">
+      <p class="section-label" style="text-align:center;" data-lang="en">Follow Our Journey</p>
+      <p class="section-label" style="text-align:center;" data-lang="es">Síguenos</p>
+      <h2 class="section-title" style="text-align:center;font-size:2rem;" data-lang="en">On <em>Instagram</em></h2>
+      <h2 class="section-title" style="text-align:center;font-size:2rem;" data-lang="es">En <em>Instagram</em></h2>
+      <br>
+      <a href="https://instagram.com/alizapilatesstudio" target="_blank">@alizapilatesstudio</a>
+    </div>
+    <div class="instagram-grid">
+      <div class="insta-placeholder"><div class="insta-icon">◻</div><div class="insta-label">@alizapilatesstudio</div></div>
+      <div class="insta-placeholder"><div class="insta-icon">◻</div><div class="insta-label">@alizapilatesstudio</div></div>
+      <div class="insta-placeholder"><div class="insta-icon">◻</div><div class="insta-label">@alizapilatesstudio</div></div>
+      <div class="insta-placeholder"><div class="insta-icon">◻</div><div class="insta-label">@alizapilatesstudio</div></div>
+    </div>
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.78rem;color:var(--greige-dark);letter-spacing:0.08em;" data-lang="en">Instagram feed will load automatically once connected</p>
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.78rem;color:var(--greige-dark);letter-spacing:0.08em;" data-lang="es">El feed de Instagram se cargará automáticamente una vez conectado</p>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="contact-block">
+      <h4 data-lang="en">Visit Us</h4>
+      <h4 data-lang="es">Visítanos</h4>
+      <p>Centro Comercial Bal Harbour<br>Paitilla, Suite M41<br>(Arriba del Mini Max)<br>Ciudad de Panamá</p>
+    </div>
+    <div class="contact-block">
+      <h4 data-lang="en">Get in Touch</h4>
+      <h4 data-lang="es">Contáctanos</h4>
+      <p>
+        <a href="tel:2151883">Tel: 215-1883</a><br>
+        <a href="https://instagram.com/alizapilatesstudio" target="_blank">@alizapilatesstudio</a><br>
+        <span data-lang="en">By appointment only</span>
+        <span data-lang="es">Previa cita</span>
+      </p>
+    </div>
+    <div class="contact-block">
+      <h4 data-lang="en">Aliza Pilates Studio</h4>
+      <h4 data-lang="es">Aliza Pilates Studio</h4>
+      <p data-lang="en">25 years of personalized Pilates training in the original Joseph Pilates method. Panama City's premier Pilates studio.</p>
+      <p data-lang="es">25 años de entrenamiento personalizado de Pilates en el método original de Joseph Pilates. El estudio de Pilates líder en la Ciudad de Panamá.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 Aliza Pilates Studio — Panama City, Panama &nbsp;|&nbsp; <a href="https://instagram.com/alizapilatesstudio" style="color:var(--greige-dark);text-decoration:none;">@alizapilatesstudio</a></p>
+  </footer>
+
+  <script>
+    function toggleLang(btn) {
+      const isEs = document.body.classList.toggle('es');
+      btn.querySelector('.lang-label').textContent = isEs ? 'EN' : 'ES';
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
