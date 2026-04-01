@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Instructora — Aliza Pilates Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --greige: #C8C4B7; --greige-light: #E8E4D9; --greige-dark: #A8A49A;
+      --charcoal: #8B8578; --charcoal-dark: #5C5A55; --cream: #F7F5F0;
+      --white: #FFFFFF; --text-dark: #3A3935; --error: #C0392B; --success: #4A7C59;
+    }
+    body { font-family: 'Jost', sans-serif; font-weight: 300; background: var(--cream); color: var(--text-dark); min-height: 100vh; }
+
+    /* LOGIN */
+    .login-page {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--charcoal-dark); padding: 2rem;
+    }
+    .login-box { background: var(--white); padding: 3rem; max-width: 420px; width: 100%; }
+    .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--charcoal-dark); text-align: center; margin-bottom: 0.5rem; letter-spacing: 0.05em; }
+    .login-subtitle { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--greige-dark); text-align: center; margin-bottom: 2.5rem; }
+    .login-box h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--charcoal-dark); text-align: center; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--charcoal); margin-bottom: 0.5rem; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--greige);
+      background: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.9rem;
+      color: var(--text-dark); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--charcoal-dark); }
+    .btn-primary {
+      width: 100%; padding: 1rem; background: var(--charcoal-dark); color: var(--white);
+      border: none; font-family: 'Jost', sans-serif; font-size: 0.8rem;
+      letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--text-dark); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg { color: var(--error); font-size: 0.8rem; margin-top: 0.5rem; text-align: center; }
+
+    /* DASHBOARD */
+    .dashboard { display: none; min-height: 100vh; }
+    .dashboard.active { display: block; }
+
+    .dash-nav {
+      background: var(--charcoal-dark); padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dash-nav-left { display: flex; align-items: center; gap: 1.5rem; }
+    .dash-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--greige-light); }
+    .dash-welcome { font-size: 0.78rem; color: var(--greige-dark); letter-spacing: 0.05em; }
+    .btn-logout {
+      background: none; border: 1px solid var(--greige-dark); color: var(--greige-light);
+      padding: 0.4rem 1rem; font-family: 'Jost', sans-serif; font-size: 0.72rem;
+      letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.1); }
+
+    .dash-layout { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem; display: grid; grid-template-columns: 1fr 360px; gap: 2.5rem; }
+
+    /* MY SCHEDULE */
+    .schedule-panel h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; color: var(--charcoal-dark); margin-bottom: 0.4rem; }
+    .schedule-panel .subtitle { font-size: 0.78rem; color: var(--charcoal); letter-spacing: 0.05em; margin-bottom: 2rem; }
+
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--greige-light); margin-bottom: 2rem; }
+    .tab {
+      padding: 0.7rem 1.5rem; font-size: 0.75rem; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--charcoal); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s;
+    }
+    .tab.active { color: var(--charcoal-dark); border-bottom-color: var(--charcoal-dark); }
+
+    .slots-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .slot-row {
+      background: var(--white); border: 1px solid var(--greige-light);
+      padding: 1.2rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .slot-row-info {}
+    .slot-row-date { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--greige-dark); margin-bottom: 0.2rem; }
+    .slot-row-time { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--charcoal-dark); }
+    .slot-row-type { font-size: 0.75rem; color: var(--charcoal); margin-top: 0.15rem; }
+    .slot-row-actions { display: flex; align-items: center; gap: 1rem; }
+    .slot-booked-badge {
+      background: var(--greige-light); color: var(--charcoal-dark);
+      font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.3rem 0.8rem; cursor: pointer; border: 1px solid var(--greige);
+    }
+    .slot-booked-badge:hover { background: var(--greige); }
+    .btn-delete {
+      background: none; border: 1px solid var(--greige); color: var(--greige-dark);
+      padding: 0.4rem 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.7rem;
+      letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-delete:hover { border-color: var(--error); color: var(--error); }
+    .empty-state { text-align: center; padding: 3rem; color: var(--charcoal); font-size: 0.9rem; line-height: 1.8; }
+
+    /* ADD SLOT PANEL */
+    .add-panel { height: fit-content; position: sticky; top: 1rem; }
+    .add-panel-inner { background: var(--white); border: 1px solid var(--greige-light); padding: 2rem; }
+    .add-panel h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400; color: var(--charcoal-dark); margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--greige-light); }
+    .btn-add {
+      width: 100%; padding: 0.9rem; background: var(--charcoal-dark); color: var(--white);
+      border: none; font-family: 'Jost', sans-serif; font-size: 0.78rem;
+      letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
+    }
+    .btn-add:hover { background: var(--text-dark); }
+    .success-toast {
+      background: var(--success); color: white; padding: 0.8rem 1rem;
+      font-size: 0.8rem; margin-top: 0.8rem; text-align: center; display: none;
+      letter-spacing: 0.05em;
+    }
+
+    /* BOOKING INFO MODAL */
+    .info-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(58,57,53,0.6); z-index: 200;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .info-overlay.active { display: flex; }
+    .info-modal { background: var(--white); max-width: 420px; width: 100%; padding: 2rem; position: relative; }
+    .info-modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 400; color: var(--charcoal-dark); margin-bottom: 1.5rem; }
+    .info-row { display: flex; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid var(--greige-light); font-size: 0.85rem; }
+    .info-row:last-of-type { border-bottom: none; }
+    .info-label { color: var(--charcoal); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .info-value { color: var(--text-dark); font-weight: 400; }
+    .btn-close-info {
+      width: 100%; margin-top: 1.5rem; padding: 0.8rem; background: var(--cream);
+      border: 1px solid var(--greige); font-family: 'Jost', sans-serif; font-size: 0.75rem;
+      letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; color: var(--charcoal-dark);
+    }
+
+    .loading { padding: 2rem; text-align: center; color: var(--charcoal); font-size: 0.85rem; }
+
+    @media (max-width: 800px) {
+      .dash-layout { grid-template-columns: 1fr; }
+      .add-panel { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div class="login-page" id="login-page">
+  <div class="login-box">
+    <div class="login-logo">ALIZA PILATES STUDIO</div>
+    <div class="login-subtitle">Panel de Instructora</div>
+    <h2>Iniciar sesión</h2>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="tu@correo.com" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" />
+    </div>
+    <div id="login-error"></div>
+    <button class="btn-primary" onclick="login()" id="login-btn">ENTRAR</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="dash-nav">
+    <div class="dash-nav-left">
+      <div class="dash-logo">Aliza Pilates Studio</div>
+      <div class="dash-welcome" id="dash-welcome">Bienvenida</div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <div class="dash-layout">
+    <div class="schedule-panel">
+      <h2>Mi horario</h2>
+      <p class="subtitle">Gestiona tus clases disponibles y ve quién ha reservado</p>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('upcoming', this)">Próximas</div>
+        <div class="tab" onclick="switchTab('past', this)">Pasadas</div>
+      </div>
+      <div class="slots-list" id="slots-list"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <div class="add-panel">
+      <div class="add-panel-inner">
+        <h3>Añadir clase disponible</h3>
+        <div class="form-group">
+          <label>Fecha</label>
+          <input type="date" id="new-date" />
+        </div>
+        <div class="form-group">
+          <label>Hora de inicio</label>
+          <input type="time" id="new-time" />
+        </div>
+        <div class="form-group">
+          <label>Tipo de clase</label>
+          <select id="new-type">
+            <option value="Privada">Privada</option>
+            <option value="Dúo">Dúo</option>
+            <option value="Grupal">Grupal</option>
+            <option value="Mat Class">Mat Class</option>
+          </select>
+        </div>
+        <div id="add-error"></div>
+        <button class="btn-add" onclick="addSlot()">+ AÑADIR CLASE</button>
+        <div class="success-toast" id="add-toast">✓ Clase añadida correctamente</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING INFO MODAL -->
+<div class="info-overlay" id="info-overlay">
+  <div class="info-modal">
+    <h3>Información de la reserva</h3>
+    <div id="info-content"></div>
+    <button class="btn-close-info" onclick="document.getElementById('info-overlay').classList.remove('active')">CERRAR</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentInstructor = null;
+let mySlots = [];
+let currentTab = 'upcoming';
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+
+  if (!email || !password) {
+    errEl.innerHTML = '<p class="error-msg">Por favor completa todos los campos.</p>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'ENTRANDO...';
+
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errEl.innerHTML = '<p class="error-msg">Correo o contraseña incorrectos.</p>';
+    btn.disabled = false;
+    btn.textContent = 'ENTRAR';
+    return;
+  }
+
+  currentUser = data.user;
+  await loadDashboard();
+}
+
+async function loadDashboard() {
+  const { data: instructor } = await supabase
+    .from('instructors').select('*').eq('id', currentUser.id).single();
+
+  currentInstructor = instructor;
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+  document.getElementById('dash-welcome').textContent = `Bienvenida, ${instructor?.name?.split(' ')[0] || ''}`;
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('new-date').min = today;
+
+  await loadSlots();
+}
+
+async function loadSlots() {
+  const { data } = await supabase
+    .from('time_slots')
+    .select('*, bookings(*)')
+    .eq('instructor_id', currentUser.id)
+    .order('date').order('start_time');
+
+  mySlots = data || [];
+  renderSlots();
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderSlots();
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatTime(timeStr) {
+  const [h, m] = timeStr.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:${m} ${ampm}`;
+}
+
+function renderSlots() {
+  const today = new Date().toISOString().split('T')[0];
+  const filtered = mySlots.filter(s =>
+    currentTab === 'upcoming' ? s.date >= today : s.date < today
+  );
+
+  const list = document.getElementById('slots-list');
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">${currentTab === 'upcoming'
+      ? 'No tienes clases próximas.<br>Añade tus horarios disponibles.'
+      : 'No hay clases pasadas.'}</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(slot => {
+    const booking = slot.bookings?.[0];
+    const actionsHtml = slot.is_booked && booking
+      ? `<div class="slot-row-actions">
+           <div class="slot-booked-badge" onclick="showBookingInfo('${slot.id}')">Ver reserva</div>
+           ${currentTab === 'upcoming' ? `<button class="btn-delete" onclick="deleteSlot('${slot.id}')">Cancelar</button>` : ''}
+         </div>`
+      : `<div class="slot-row-actions">
+           ${currentTab === 'upcoming' ? `<button class="btn-delete" onclick="deleteSlot('${slot.id}')">Eliminar</button>` : ''}
+         </div>`;
+
+    return `<div class="slot-row" id="slot-${slot.id}">
+      <div class="slot-row-info">
+        <div class="slot-row-date">${formatDate(slot.date)}</div>
+        <div class="slot-row-time">${formatTime(slot.start_time)}</div>
+        <div class="slot-row-type">${slot.class_type} · 1 hora · ${slot.is_booked ? '<span style="color:var(--success)">Reservada</span>' : '<span style="color:var(--charcoal)">Disponible</span>'}</div>
+      </div>
+      ${actionsHtml}
+    </div>`;
+  }).join('');
+}
+
+function showBookingInfo(slotId) {
+  const slot = mySlots.find(s => s.id === slotId);
+  if (!slot || !slot.bookings?.[0]) return;
+  const b = slot.bookings[0];
+  const booked = new Date(b.created_at).toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('info-content').innerHTML = `
+    <div class="info-row"><span class="info-label">Alumna</span><span class="info-value">${b.customer_name}</span></div>
+    <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${b.customer_phone}</span></div>
+    <div class="info-row"><span class="info-label">Clase</span><span class="info-value">${slot.class_type}</span></div>
+    <div class="info-row"><span class="info-label">Fecha</span><span class="info-value">${formatDate(slot.date)}</span></div>
+    <div class="info-row"><span class="info-label">Hora</span><span class="info-value">${formatTime(slot.start_time)}</span></div>
+    <div class="info-row"><span class="info-label">Reservado el</span><span class="info-value">${booked}</span></div>`;
+  document.getElementById('info-overlay').classList.add('active');
+}
+
+async function addSlot() {
+  const date = document.getElementById('new-date').value;
+  const time = document.getElementById('new-time').value;
+  const type = document.getElementById('new-type').value;
+  const errEl = document.getElementById('add-error');
+
+  if (!date || !time) {
+    errEl.innerHTML = '<p class="error-msg">Por favor completa la fecha y hora.</p>';
+    return;
+  }
+
+  errEl.innerHTML = '';
+  const { error } = await supabase.from('time_slots').insert({
+    instructor_id: currentUser.id, date, start_time: time, class_type: type
+  });
+
+  if (error) {
+    errEl.innerHTML = '<p class="error-msg">Error al añadir. Intenta de nuevo.</p>';
+    return;
+  }
+
+  document.getElementById('new-date').value = '';
+  document.getElementById('new-time').value = '';
+  const toast = document.getElementById('add-toast');
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+  await loadSlots();
+}
+
+async function deleteSlot(slotId) {
+  const slot = mySlots.find(s => s.id === slotId);
+  const msg = slot?.is_booked
+    ? '¿Estás segura de que quieres cancelar esta clase? Ya tiene una reserva.'
+    : '¿Estás segura de que quieres eliminar este horario?';
+  if (!confirm(msg)) return;
+  await supabase.from('time_slots').delete().eq('id', slotId);
+  await loadSlots();
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  currentUser = null; currentInstructor = null;
+}
+
+// Check if already logged in
+supabase.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    currentUser = data.session.user;
+    loadDashboard();
+  }
+});
+</script>
+</body>
+</html>
