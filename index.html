@@ -391,7 +391,222 @@
       color: var(--charcoal);
     }
 
-    /* ───── BOOKING CTA ───── */
+    /* ───── INSTRUCTORS ───── */
+    .instructors-section {
+      background: var(--cream);
+      padding: 7rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .instructors-desc {
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+      margin-top: 1rem;
+      max-width: 600px;
+    }
+
+    .instructors-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 2rem;
+    }
+
+    .instructor-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1.2rem;
+    }
+
+    .instructor-photo {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: var(--greige-light);
+      border: 2px solid var(--greige);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .instructor-card:hover .instructor-photo {
+      border-color: var(--charcoal-dark);
+    }
+
+    .instructor-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .instructor-initials {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      color: var(--charcoal);
+      letter-spacing: 0.05em;
+    }
+
+    .instructor-info h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--charcoal-dark);
+      line-height: 1.3;
+    }
+
+    .instructor-title {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      margin-top: 0.3rem;
+    }
+
+    .instructor-book {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--charcoal-dark);
+      text-decoration: none;
+      border-bottom: 1px solid var(--greige-dark);
+      padding-bottom: 1px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .instructor-book:hover {
+      color: var(--text-dark);
+      border-color: var(--charcoal-dark);
+    }
+
+    @media (max-width: 900px) {
+      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+      .instructors-section { padding: 5rem 1.5rem; }
+    }
+
+    /* ───── CLASSES ───── */
+    .classes-section {
+      background: var(--white);
+      padding: 7rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+    }
+
+    .classes-intro { max-width: 650px; }
+
+    .classes-desc {
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+      margin-top: 1rem;
+    }
+
+    .class-types {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .class-card {
+      padding: 2rem 1.5rem;
+      background: var(--cream);
+      border-top: 2px solid var(--greige);
+      transition: border-color 0.2s;
+    }
+
+    .class-card.featured {
+      background: var(--charcoal-dark);
+      border-top-color: var(--charcoal-dark);
+    }
+
+    .class-card.featured h3,
+    .class-card.featured p { color: var(--greige-light); }
+
+    .class-card.featured .class-tag {
+      border-color: var(--greige-dark);
+      color: var(--greige-dark);
+    }
+
+    .class-card:hover { border-top-color: var(--charcoal-dark); }
+
+    .class-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .class-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--charcoal-dark);
+    }
+
+    .class-tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--greige-dark);
+      padding: 0.2rem 0.6rem;
+      color: var(--charcoal);
+    }
+
+    .class-card p {
+      font-size: 0.88rem;
+      line-height: 1.75;
+      color: var(--charcoal);
+    }
+
+    .equipment-block { max-width: 900px; }
+
+    .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 1.5rem;
+      border-left: 1px solid var(--greige-light);
+      border-top: 1px solid var(--greige-light);
+    }
+
+    .equip-item {
+      padding: 1.2rem 1.5rem;
+      border-right: 1px solid var(--greige-light);
+      border-bottom: 1px solid var(--greige-light);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .equip-item span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      color: var(--greige-dark);
+      min-width: 24px;
+    }
+
+    .equip-item p {
+      font-size: 0.85rem;
+      color: var(--charcoal-dark);
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 900px) {
+      .class-types { grid-template-columns: 1fr 1fr; }
+      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
+      .classes-section { padding: 5rem 1.5rem; }
+    }
+
+    /* ───── BOOKING ───── */
     .booking-cta {
       background: var(--greige-light);
       text-align: center;
@@ -590,6 +805,8 @@
     <ul class="nav-links">
       <li><a href="#about" data-lang="en">About</a><a href="#about" data-lang="es">Nosotros</a></li>
       <li><a href="#founder" data-lang="en">Our Founder</a><a href="#founder" data-lang="es">Fundadora</a></li>
+      <li><a href="#classes" data-lang="en">Classes</a><a href="#classes" data-lang="es">Clases</a></li>
+      <li><a href="#instructors" data-lang="en">Instructors</a><a href="#instructors" data-lang="es">Instructoras</a></li>
       <li><a href="#booking" data-lang="en">Book a Class</a><a href="#booking" data-lang="es">Reservar</a></li>
       <li><a href="#contact" data-lang="en">Contact</a><a href="#contact" data-lang="es">Contacto</a></li>
     </ul>
@@ -701,6 +918,164 @@
         <span class="credential-tag" data-lang="en">25+ Years Experience</span>
         <span class="credential-tag" data-lang="es">25+ Años de Experiencia</span>
       </div>
+    </div>
+  </section>
+
+  <!-- CLASSES -->
+  <section class="classes-section" id="classes">
+    <div class="classes-intro fade-in">
+      <p class="section-label" data-lang="en">What We Offer</p>
+      <p class="section-label" data-lang="es">Nuestras Clases</p>
+      <h2 class="section-title" data-lang="en">Classes for <em>every body</em></h2>
+      <h2 class="section-title" data-lang="es">Clases para <em>todo el mundo</em></h2>
+      <div class="divider"></div>
+      <p class="classes-desc" data-lang="en">All our classes use authentic Gratz equipment — the original manufacturer of Joseph Pilates' apparatus. Whether you prefer a fully private session or the energy of a small group, we have the right format for you.</p>
+      <p class="classes-desc" data-lang="es">Todas nuestras clases utilizan los equipos originales de Gratz — el fabricante original de los aparatos de Joseph Pilates. Ya sea que prefieras una sesión completamente privada o la energía de un grupo pequeño, tenemos el formato ideal para ti.</p>
+    </div>
+
+    <div class="class-types fade-in">
+      <div class="class-card featured">
+        <div class="class-card-top">
+          <h3 data-lang="en">Private</h3>
+          <h3 data-lang="es">Privada</h3>
+          <span class="class-tag" data-lang="en">1 person</span>
+          <span class="class-tag" data-lang="es">1 persona</span>
+        </div>
+        <p data-lang="en">A fully personalized session with one instructor dedicated entirely to you. The most effective way to learn and progress.</p>
+        <p data-lang="es">Una sesión completamente personalizada con un instructor dedicado exclusivamente a ti. La forma más efectiva de aprender y progresar.</p>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <h3 data-lang="en">Duo</h3>
+          <h3 data-lang="es">Dúo</h3>
+          <span class="class-tag" data-lang="en">2 people</span>
+          <span class="class-tag" data-lang="es">2 personas</span>
+        </div>
+        <p data-lang="en">Train together with a partner or friend. Personalized attention for both, at a more accessible format.</p>
+        <p data-lang="es">Entrena junto a una pareja o amiga. Atención personalizada para ambas, en un formato más accesible.</p>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <h3 data-lang="en">Group</h3>
+          <h3 data-lang="es">Grupal</h3>
+          <span class="class-tag" data-lang="en">3–4 people</span>
+          <span class="class-tag" data-lang="es">3–4 personas</span>
+        </div>
+        <p data-lang="en">Trios or quartets. A dynamic and motivating environment while still receiving qualified instruction.</p>
+        <p data-lang="es">Tríos o cuartetos. Un ambiente dinámico y motivador con instrucción calificada.</p>
+      </div>
+      <div class="class-card">
+        <div class="class-card-top">
+          <h3>Mat Class</h3>
+          <span class="class-tag" data-lang="en">Group</span>
+          <span class="class-tag" data-lang="es">Grupal</span>
+        </div>
+        <p data-lang="en">Floor-based Pilates using the original mat exercises developed by Joseph Pilates. Accessible for all levels.</p>
+        <p data-lang="es">Pilates en el suelo utilizando los ejercicios de mat originales desarrollados por Joseph Pilates. Accesible para todos los niveles.</p>
+      </div>
+    </div>
+
+    <div class="equipment-block fade-in">
+      <p class="section-label" data-lang="en">Gratz Equipment</p>
+      <p class="section-label" data-lang="es">Equipos Gratz</p>
+      <h3 class="section-title" style="font-size:1.8rem;" data-lang="en">The <em>original</em> apparatus</h3>
+      <h3 class="section-title" style="font-size:1.8rem;" data-lang="es">Los aparatos <em>originales</em></h3>
+      <div class="divider"></div>
+      <div class="equipment-grid">
+        <div class="equip-item"><span>01</span><p>Reformer</p></div>
+        <div class="equip-item"><span>02</span><p>Cadillac</p></div>
+        <div class="equip-item"><span>03</span><p>Mat</p></div>
+        <div class="equip-item"><span>04</span><p>Wunda Chair</p></div>
+        <div class="equip-item"><span>05</span><p>Electric / High Chair</p></div>
+        <div class="equip-item"><span>06</span><p>Baby Chair</p></div>
+        <div class="equip-item"><span>07</span><p>Large Barrel</p></div>
+        <div class="equip-item"><span>08</span><p>Spine Corrector</p></div>
+        <div class="equip-item"><span>09</span><p>Small Barrel</p></div>
+        <div class="equip-item"><span>10</span><p>Guillotine</p></div>
+        <div class="equip-item"><span>11</span><p>Pedi Pole</p></div>
+        <div class="equip-item"><span>12</span><p data-lang="en">Various Accessories</p><p data-lang="es">Varios Accesorios</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTRUCTORS -->
+  <section class="instructors-section" id="instructors">
+    <div class="instructors-intro fade-in">
+      <p class="section-label" data-lang="en">Our Team</p>
+      <p class="section-label" data-lang="es">Nuestro Equipo</p>
+      <h2 class="section-title" data-lang="en">Meet our <em>instructors</em></h2>
+      <h2 class="section-title" data-lang="es">Conoce a nuestras <em>instructoras</em></h2>
+      <div class="divider"></div>
+      <p class="instructors-desc" data-lang="en">All our instructors are certified in the original Joseph Pilates method and bring years of dedicated experience to every class.</p>
+      <p class="instructors-desc" data-lang="es">Todas nuestras instructoras están certificadas en el método original de Joseph Pilates y aportan años de experiencia dedicada a cada clase.</p>
+    </div>
+    <div class="instructors-grid fade-in">
+
+      <div class="instructor-card">
+        <div class="instructor-photo">
+          <div class="instructor-initials">AC</div>
+        </div>
+        <div class="instructor-info">
+          <h4>Aliza Cohen Mizrachi</h4>
+          <p class="instructor-title" data-lang="en">Founder & Director</p>
+          <p class="instructor-title" data-lang="es">Fundadora y Directora</p>
+          <a href="#booking" class="instructor-book" data-lang="en">Book a class</a>
+          <a href="#booking" class="instructor-book" data-lang="es">Reservar clase</a>
+        </div>
+      </div>
+
+      <div class="instructor-card">
+        <div class="instructor-photo">
+          <div class="instructor-initials">OH</div>
+        </div>
+        <div class="instructor-info">
+          <h4>Oriana Herrera</h4>
+          <p class="instructor-title" data-lang="en">Certified Instructor</p>
+          <p class="instructor-title" data-lang="es">Instructora Certificada</p>
+          <a href="#booking" class="instructor-book" data-lang="en">Book a class</a>
+          <a href="#booking" class="instructor-book" data-lang="es">Reservar clase</a>
+        </div>
+      </div>
+
+      <div class="instructor-card">
+        <div class="instructor-photo">
+          <div class="instructor-initials">VC</div>
+        </div>
+        <div class="instructor-info">
+          <h4>Vicky Cohen Perez</h4>
+          <p class="instructor-title" data-lang="en">Certified Instructor</p>
+          <p class="instructor-title" data-lang="es">Instructora Certificada</p>
+          <a href="#booking" class="instructor-book" data-lang="en">Book a class</a>
+          <a href="#booking" class="instructor-book" data-lang="es">Reservar clase</a>
+        </div>
+      </div>
+
+      <div class="instructor-card">
+        <div class="instructor-photo">
+          <div class="instructor-initials">MR</div>
+        </div>
+        <div class="instructor-info">
+          <h4>Mabel Ramos</h4>
+          <p class="instructor-title" data-lang="en">Certified Instructor</p>
+          <p class="instructor-title" data-lang="es">Instructora Certificada</p>
+          <a href="#booking" class="instructor-book" data-lang="en">Book a class</a>
+          <a href="#booking" class="instructor-book" data-lang="es">Reservar clase</a>
+        </div>
+      </div>
+
+      <div class="instructor-card">
+        <div class="instructor-photo">
+          <div class="instructor-initials">NR</div>
+        </div>
+        <div class="instructor-info">
+          <h4>Nohely Rangel</h4>
+          <p class="instructor-title" data-lang="en">Certified Instructor</p>
+          <p class="instructor-title" data-lang="es">Instructora Certificada</p>
+          <a href="#booking" class="instructor-book" data-lang="en">Book a class</a>
+          <a href="#booking" class="instructor-book" data-lang="es">Reservar clase</a>
+        </div>
+      </div>
+
     </div>
   </section>
 
