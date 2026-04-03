@@ -223,7 +223,7 @@
 <script>
 const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 let currentInstructor = null;
@@ -244,7 +244,7 @@ async function login() {
   btn.disabled = true;
   btn.textContent = 'ENTRANDO...';
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     errEl.innerHTML = '<p class="error-msg">Correo o contraseña incorrectos.</p>';
@@ -258,7 +258,7 @@ async function login() {
 }
 
 async function loadDashboard() {
-  const { data: instructor } = await supabase
+  const { data: instructor } = await supabaseClient
     .from('instructors').select('*').eq('id', currentUser.id).single();
 
   currentInstructor = instructor;
@@ -273,7 +273,7 @@ async function loadDashboard() {
 }
 
 async function loadSlots() {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('time_slots')
     .select('*, bookings(*)')
     .eq('instructor_id', currentUser.id)
@@ -367,7 +367,7 @@ async function addSlot() {
   }
 
   errEl.innerHTML = '';
-  const { error } = await supabase.from('time_slots').insert({
+  const { error } = await supabaseClient.from('time_slots').insert({
     instructor_id: currentUser.id, date, start_time: time, class_type: type
   });
 
@@ -390,12 +390,12 @@ async function deleteSlot(slotId) {
     ? '¿Estás segura de que quieres cancelar esta clase? Ya tiene una reserva.'
     : '¿Estás segura de que quieres eliminar este horario?';
   if (!confirm(msg)) return;
-  await supabase.from('time_slots').delete().eq('id', slotId);
+  await supabaseClient.from('time_slots').delete().eq('id', slotId);
   await loadSlots();
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   document.getElementById('dashboard').classList.remove('active');
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('login-email').value = '';
@@ -404,7 +404,7 @@ async function logout() {
 }
 
 // Check if already logged in
-supabase.auth.getSession().then(({ data }) => {
+supabaseClient.auth.getSession().then(({ data }) => {
   if (data.session) {
     currentUser = data.session.user;
     loadDashboard();
