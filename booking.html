@@ -182,15 +182,14 @@
       <label data-lang="es">Instructora</label>
       <label data-lang="en">Instructor</label>
       <select id="filter-instructor">
-        <option value="" data-lang="es">Todas</option>
-        <option value="" data-lang="en">All instructors</option>
+        <option value="">— Todas las instructoras —</option>
       </select>
     </div>
     <div class="filter-group">
       <label data-lang="es">Tipo de clase</label>
       <label data-lang="en">Class type</label>
       <select id="filter-type">
-        <option value="">— <span data-lang="es">Todas</span><span data-lang="en">All</span> —</option>
+        <option value="">— Todas —</option>
         <option value="Privada">Privada</option>
         <option value="Dúo">Dúo</option>
         <option value="Grupal">Grupal</option>
@@ -230,7 +229,7 @@ function toggleLang(btn) {
 
 async function loadData() {
   const { data: instructors } = await supabaseClient.from('instructors').select('*');
-  const { data: slots } = await supabase
+  const { data: slots } = await supabaseClient
     .from('time_slots')
     .select('*, instructors(name)')
     .gte('date', new Date().toISOString().split('T')[0])
