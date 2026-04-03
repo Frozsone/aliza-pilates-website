@@ -215,7 +215,7 @@
 <script>
 const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allSlots = [];
 let allInstructors = [];
@@ -229,7 +229,7 @@ function toggleLang(btn) {
 }
 
 async function loadData() {
-  const { data: instructors } = await supabase.from('instructors').select('*');
+  const { data: instructors } = await supabaseClient.from('instructors').select('*');
   const { data: slots } = await supabase
     .from('time_slots')
     .select('*, instructors(name)')
@@ -372,7 +372,7 @@ async function confirmBooking() {
   btn.disabled = true;
   btn.textContent = es ? 'PROCESANDO...' : 'PROCESSING...';
 
-  const { error: bookingError } = await supabase.from('bookings').insert({
+  const { error: bookingError } = await supabaseClient.from('bookings').insert({
     slot_id: selectedSlot.id, customer_name: name, customer_phone: phone
   });
 
@@ -383,7 +383,7 @@ async function confirmBooking() {
     return;
   }
 
-  await supabase.from('time_slots').update({ is_booked: true }).eq('id', selectedSlot.id);
+  await supabaseClient.from('time_slots').update({ is_booked: true }).eq('id', selectedSlot.id);
   const idx = allSlots.findIndex(s => s.id === selectedSlot.id);
   if (idx !== -1) allSlots[idx].is_booked = true;
   renderSlots();
