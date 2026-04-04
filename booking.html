@@ -131,9 +131,15 @@
     .error-msg { color: var(--error); font-size: 0.8rem; margin-top: 0.4rem; }
 
     [data-lang="en"] { display: none; }
+    [data-lang="es"] { display: block; }
     body.es [data-lang="en"] { display: none; }
     body.es [data-lang="es"] { display: block; }
+    body:not(.es) [data-lang="es"] { display: none; }
+    body:not(.es) [data-lang="en"] { display: block; }
+    span[data-lang="en"] { display: none; }
     body.es span[data-lang="es"] { display: inline; }
+    body:not(.es) span[data-lang="en"] { display: inline; }
+    body:not(.es) span[data-lang="es"] { display: none; }
     .lang-toggle {
       background: none; border: 1px solid var(--greige-dark); border-radius: 20px;
       padding: 0.3rem 0.9rem; cursor: pointer; font-family: 'Jost', sans-serif;
