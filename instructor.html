@@ -363,6 +363,61 @@ async function handleRequest(requestId, newStatus) {
   const row = document.getElementById(`req-${requestId}`);
   if (row) row.style.opacity = '0.5';
 
+  // If confirming, create a real time_slot + booking so it appears in both schedules
+  if (newStatus === 'confirmed') {
+    // Find the request data from the DOM (re-fetch to be safe)
+    const { data: req, error: reqErr } = await supabaseClient
+      .from('class_requests')
+      .select('*')
+      .eq('id', requestId)
+      .single();
+
+    if (reqErr || !req) {
+      if (row) row.style.opacity = '1';
+      alert('Error al obtener la solicitud. Intenta de nuevo.');
+      return;
+    }
+
+    // 1. Create the time slot for this instructor
+    const { data: slot, error: slotErr } = await supabaseClient
+      .from('time_slots')
+      .insert({
+        instructor_id: currentUser.id,
+        date: req.requested_date,
+        start_time: req.requested_time,
+        class_type: req.class_type,
+        is_booked: true
+      })
+      .select()
+      .single();
+
+    if (slotErr || !slot) {
+      if (row) row.style.opacity = '1';
+      alert('Error al crear el horario. Intenta de nuevo.');
+      return;
+    }
+
+    // 2. Create the booking linked to the customer
+    const { error: bookingErr } = await supabaseClient
+      .from('bookings')
+      .insert({
+        slot_id: slot.id,
+        customer_id: req.customer_id,
+        customer_name: req.customer_name,
+        customer_phone: req.customer_phone,
+        cancelled: false
+      });
+
+    if (bookingErr) {
+      // Roll back the slot if booking fails
+      await supabaseClient.from('time_slots').delete().eq('id', slot.id);
+      if (row) row.style.opacity = '1';
+      alert('Error al crear la reserva. Intenta de nuevo.');
+      return;
+    }
+  }
+
+  // 3. Update the request status
   const { error } = await supabaseClient
     .from('class_requests')
     .update({ status: newStatus })
@@ -374,6 +429,7 @@ async function handleRequest(requestId, newStatus) {
     return;
   }
 
+  await loadSlots();
   await loadRequests();
 }
 
