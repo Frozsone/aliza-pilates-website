@@ -135,6 +135,19 @@
 
     .loading { padding: 2rem; text-align: center; color: var(--charcoal); font-size: 0.85rem; }
 
+    .btn-approve {
+      background: var(--success); color: white; border: none;
+      font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.45rem 1rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-approve:hover { background: #3a6347; }
+    .btn-decline {
+      background: none; border: 1px solid var(--error); color: var(--error);
+      font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.45rem 1rem; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-decline:hover { background: var(--error); color: white; }
+
     @media (max-width: 800px) {
       .dash-layout { grid-template-columns: 1fr; }
       .add-panel { position: static; }
@@ -298,23 +311,70 @@ async function loadRequests() {
 
   const list = document.getElementById('slots-list');
   if (!data || data.length === 0) {
-    list.innerHTML = '<div class="empty-state">No hay solicitudes de clase pendientes.</div>';
+    list.innerHTML = '<div class="empty-state">No hay solicitudes de clase.</div>';
     return;
   }
 
+  const pending = data.filter(r => r.status === 'pending');
+  const resolved = data.filter(r => r.status !== 'pending');
+
+  let html = '';
+
+  if (pending.length > 0) {
+    html += `<p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:1rem;">Pendientes (${pending.length})</p>`;
+    html += pending.map(r => renderRequestRow(r)).join('');
+  }
+
+  if (resolved.length > 0) {
+    html += `<p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--greige-dark);margin:2rem 0 1rem;">Anteriores</p>`;
+    html += resolved.map(r => renderRequestRow(r)).join('');
+  }
+
+  list.innerHTML = html;
+}
+
+function renderRequestRow(r) {
   const statusLabel = { pending: 'Pendiente', confirmed: 'Confirmada', declined: 'Rechazada' };
-  list.innerHTML = data.map(r => `
-    <div class="slot-row">
+  const statusStyle = {
+    pending: 'background:#fdf8f0;color:#8a5c1a;border:1px solid #e8c97a;',
+    confirmed: 'background:#f0f7f2;color:#4A7C59;border:1px solid #a8d5b5;',
+    declined: 'background:#fdf0f0;color:#C0392B;border:1px solid #e8a8a8;'
+  };
+  const isPending = r.status === 'pending';
+  return `
+    <div class="slot-row" id="req-${r.id}" style="${!isPending ? 'opacity:0.6;' : ''}">
       <div class="slot-row-info">
         <div class="slot-row-date">${formatDate(r.requested_date)}</div>
         <div class="slot-row-time">${formatTime(r.requested_time)}</div>
-        <div class="slot-row-type">${r.class_type} · ${r.customer_name} · ${r.customer_phone}</div>
-        ${r.notes ? `<div class="slot-row-type" style="font-style:italic;color:var(--charcoal);">"${r.notes}"</div>` : ''}
+        <div class="slot-row-type">${r.class_type} · <strong style="color:var(--charcoal-dark);">${r.customer_name}</strong> · ${r.customer_phone}</div>
+        ${r.notes ? `<div class="slot-row-type" style="font-style:italic;margin-top:0.2rem;">"${r.notes}"</div>` : ''}
       </div>
       <div class="slot-row-actions">
-        <span style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;background:var(--greige-light);color:var(--charcoal-dark);">${statusLabel[r.status] || 'Pendiente'}</span>
+        ${isPending
+          ? `<button class="btn-approve" onclick="handleRequest('${r.id}', 'confirmed')">✓ Confirmar</button>
+             <button class="btn-decline" onclick="handleRequest('${r.id}', 'declined')">✗ Rechazar</button>`
+          : `<span style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;${statusStyle[r.status] || ''}">${statusLabel[r.status] || r.status}</span>`
+        }
       </div>
-    </div>`).join('');
+    </div>`;
+}
+
+async function handleRequest(requestId, newStatus) {
+  const row = document.getElementById(`req-${requestId}`);
+  if (row) row.style.opacity = '0.5';
+
+  const { error } = await supabaseClient
+    .from('class_requests')
+    .update({ status: newStatus })
+    .eq('id', requestId);
+
+  if (error) {
+    if (row) row.style.opacity = '1';
+    alert('Error al actualizar la solicitud. Intenta de nuevo.');
+    return;
+  }
+
+  await loadRequests();
 }
 
 async function loadSlots() {
