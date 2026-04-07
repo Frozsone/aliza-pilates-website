@@ -193,6 +193,7 @@
     <div class="dash-tab active" onclick="switchTab('bookings', this)">Mis Reservas</div>
     <div class="dash-tab" onclick="switchTab('request', this)">Solicitar Clase</div>
     <div class="dash-tab" onclick="switchTab('requests-history', this)">Mis Solicitudes</div>
+    <div class="dash-tab" onclick="switchTab('profile', this)">Mi Perfil</div>
   </div>
 
   <!-- MY BOOKINGS -->
@@ -239,6 +240,57 @@
   <!-- MY REQUESTS -->
   <div class="dash-content" id="tab-requests-history" style="display:none;">
     <div id="requests-container"><div class="loading">Cargando solicitudes...</div></div>
+  </div>
+
+  <!-- MY PROFILE -->
+  <div class="dash-content" id="tab-profile" style="display:none;">
+    <div class="request-form-wrap">
+      <h3>Mi <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">perfil</em></h3>
+      <p class="desc">Actualiza tu información personal. Tu nombre y teléfono aparecerán automáticamente al reservar una clase.</p>
+
+      <div id="profile-alert"></div>
+
+      <p style="font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:1.5rem;">Información personal</p>
+
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="profile-name" placeholder="Nombre y apellido" />
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="profile-phone" placeholder="6000-0000" />
+      </div>
+      <button class="btn-primary" onclick="saveProfile()" id="profile-btn" style="margin-bottom:2rem;">GUARDAR CAMBIOS</button>
+
+      <div style="border-top:1px solid var(--greige-light);padding-top:2rem;margin-top:0.5rem;">
+        <p style="font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:1.5rem;">Correo electrónico</p>
+        <div id="email-alert"></div>
+        <div class="form-group">
+          <label>Correo actual</label>
+          <input type="email" id="profile-email-current" disabled style="opacity:0.6;cursor:not-allowed;" />
+        </div>
+        <div class="form-group">
+          <label>Nuevo correo</label>
+          <input type="email" id="profile-email-new" placeholder="nuevo@correo.com" />
+        </div>
+        <p style="font-size:0.78rem;color:var(--charcoal);line-height:1.7;margin-bottom:1rem;">Se enviará un enlace de confirmación al nuevo correo. El cambio se aplicará una vez que lo confirmes.</p>
+        <button class="btn-primary" onclick="changeEmail()" id="email-btn">CAMBIAR CORREO</button>
+      </div>
+
+      <div style="border-top:1px solid var(--greige-light);padding-top:2rem;margin-top:2rem;">
+        <p style="font-size:0.7rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:1.5rem;">Contraseña</p>
+        <div id="password-alert"></div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input type="password" id="profile-password" placeholder="Mínimo 6 caracteres" />
+        </div>
+        <div class="form-group">
+          <label>Confirmar contraseña</label>
+          <input type="password" id="profile-password-confirm" placeholder="Repite la contraseña" />
+        </div>
+        <button class="btn-primary" onclick="changePassword()" id="password-btn">CAMBIAR CONTRASEÑA</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -528,8 +580,10 @@ function switchTab(tab, el) {
   document.getElementById('tab-bookings').style.display = 'none';
   document.getElementById('tab-request').style.display = 'none';
   document.getElementById('tab-requests-history').style.display = 'none';
+  document.getElementById('tab-profile').style.display = 'none';
   document.getElementById('tab-' + tab).style.display = 'block';
   if (tab === 'requests-history') loadRequests();
+  if (tab === 'profile') loadProfileTab();
 }
 
 async function logout() {
@@ -538,6 +592,114 @@ async function logout() {
   document.getElementById('logout-btn').style.display = 'none';
   document.getElementById('login-page').style.display = 'block';
   currentUser = null; currentProfile = null;
+}
+
+function loadProfileTab() {
+  document.getElementById('profile-name').value = currentProfile?.full_name || '';
+  document.getElementById('profile-phone').value = currentProfile?.phone || '';
+  document.getElementById('profile-email-current').value = currentUser?.email || '';
+  document.getElementById('profile-email-new').value = '';
+  document.getElementById('profile-password').value = '';
+  document.getElementById('profile-password-confirm').value = '';
+  document.getElementById('profile-alert').innerHTML = '';
+  document.getElementById('email-alert').innerHTML = '';
+  document.getElementById('password-alert').innerHTML = '';
+}
+
+async function saveProfile() {
+  const name = document.getElementById('profile-name').value.trim();
+  const phone = document.getElementById('profile-phone').value.trim();
+  const alertEl = document.getElementById('profile-alert');
+  const btn = document.getElementById('profile-btn');
+
+  if (!name || !phone) {
+    alertEl.innerHTML = '<div class="alert alert-error">Por favor completa nombre y teléfono.</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'GUARDANDO...';
+
+  const { error } = await supabaseClient
+    .from('customer_profiles')
+    .update({ full_name: name, phone })
+    .eq('id', currentUser.id);
+
+  btn.disabled = false; btn.textContent = 'GUARDAR CAMBIOS';
+
+  if (error) {
+    alertEl.innerHTML = '<div class="alert alert-error">Error al guardar. Intenta de nuevo.</div>';
+    return;
+  }
+
+  currentProfile = { ...currentProfile, full_name: name, phone };
+  document.getElementById('user-name').textContent = name.split(' ')[0];
+  alertEl.innerHTML = '<div class="alert alert-success">✓ Perfil actualizado correctamente.</div>';
+  setTimeout(() => { alertEl.innerHTML = ''; }, 3000);
+}
+
+async function changeEmail() {
+  const newEmail = document.getElementById('profile-email-new').value.trim();
+  const alertEl = document.getElementById('email-alert');
+  const btn = document.getElementById('email-btn');
+
+  if (!newEmail) {
+    alertEl.innerHTML = '<div class="alert alert-error">Por favor ingresa el nuevo correo.</div>';
+    return;
+  }
+  if (newEmail === currentUser.email) {
+    alertEl.innerHTML = '<div class="alert alert-error">El nuevo correo es igual al actual.</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'ENVIANDO...';
+
+  const { error } = await supabaseClient.auth.updateUser({ email: newEmail });
+
+  btn.disabled = false; btn.textContent = 'CAMBIAR CORREO';
+
+  if (error) {
+    alertEl.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+    return;
+  }
+
+  alertEl.innerHTML = '<div class="alert alert-success">✓ Se ha enviado un enlace de confirmación al nuevo correo. Revisa tu bandeja de entrada.</div>';
+  document.getElementById('profile-email-new').value = '';
+}
+
+async function changePassword() {
+  const password = document.getElementById('profile-password').value;
+  const confirm = document.getElementById('profile-password-confirm').value;
+  const alertEl = document.getElementById('password-alert');
+  const btn = document.getElementById('password-btn');
+
+  if (!password || !confirm) {
+    alertEl.innerHTML = '<div class="alert alert-error">Por favor completa ambos campos.</div>';
+    return;
+  }
+  if (password.length < 6) {
+    alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>';
+    return;
+  }
+  if (password !== confirm) {
+    alertEl.innerHTML = '<div class="alert alert-error">Las contraseñas no coinciden.</div>';
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'GUARDANDO...';
+
+  const { error } = await supabaseClient.auth.updateUser({ password });
+
+  btn.disabled = false; btn.textContent = 'CAMBIAR CONTRASEÑA';
+
+  if (error) {
+    alertEl.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+    return;
+  }
+
+  alertEl.innerHTML = '<div class="alert alert-success">✓ Contraseña actualizada correctamente.</div>';
+  document.getElementById('profile-password').value = '';
+  document.getElementById('profile-password-confirm').value = '';
+  setTimeout(() => { alertEl.innerHTML = ''; }, 3000);
 }
 
 // Check existing session
