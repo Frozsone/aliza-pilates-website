@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Portal — Aliza Pilates Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --greige: #C8C4B7; --greige-light: #E8E4D9; --greige-dark: #A8A49A;
+      --charcoal: #8B8578; --charcoal-dark: #5C5A55; --cream: #F7F5F0;
+      --white: #FFFFFF; --text-dark: #3A3935; --error: #C0392B; --success: #4A7C59;
+    }
+    body { font-family: 'Jost', sans-serif; font-weight: 300; background: var(--cream); color: var(--text-dark); min-height: 100vh; }
+
+    /* NAV */
+    nav { background: rgba(247,245,240,0.95); backdrop-filter: blur(10px); padding: 1.2rem 4rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(200,196,183,0.3); position: sticky; top: 0; z-index: 100; }
+    .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--charcoal-dark); text-decoration: none; }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--charcoal); text-decoration: none; }
+    .nav-link:hover { color: var(--text-dark); }
+    .btn-logout { background: none; border: 1px solid var(--greige-dark); padding: 0.35rem 1rem; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--charcoal-dark); cursor: pointer; transition: all 0.2s; }
+    .btn-logout:hover { background: var(--greige-light); }
+
+    /* AUTH PAGES */
+    .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--charcoal-dark); padding: 2rem; }
+    .auth-box { background: var(--white); padding: 3rem; max-width: 440px; width: 100%; }
+    .auth-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--charcoal-dark); text-align: center; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .auth-sub { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--greige-dark); text-align: center; margin-bottom: 2rem; }
+    .auth-box h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--charcoal-dark); text-align: center; margin-bottom: 2rem; }
+    .auth-switch { text-align: center; margin-top: 1.5rem; font-size: 0.82rem; color: var(--charcoal); }
+    .auth-switch a { color: var(--charcoal-dark); cursor: pointer; text-decoration: underline; }
+
+    /* FORMS */
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--charcoal); margin-bottom: 0.5rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--greige);
+      background: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.9rem;
+      color: var(--text-dark); outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--charcoal-dark); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .btn-primary { width: 100%; padding: 1rem; background: var(--charcoal-dark); color: var(--white); border: none; font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--text-dark); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { width: 100%; padding: 0.9rem; background: none; border: 1px solid var(--greige); color: var(--charcoal-dark); font-family: 'Jost', sans-serif; font-size: 0.78rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-top: 0.8rem; }
+    .btn-secondary:hover { background: var(--greige-light); }
+    .alert { padding: 0.9rem 1rem; margin-bottom: 1rem; font-size: 0.82rem; line-height: 1.6; }
+    .alert-error { background: #fdf0f0; border-left: 3px solid var(--error); color: var(--error); }
+    .alert-success { background: #f0f7f2; border-left: 3px solid var(--success); color: var(--success); }
+    .alert-info { background: var(--greige-light); border-left: 3px solid var(--greige-dark); color: var(--charcoal-dark); }
+
+    /* DASHBOARD */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+
+    .dash-header { background: var(--charcoal-dark); padding: 3rem 4rem; }
+    .dash-header p { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--greige-dark); margin-bottom: 0.5rem; }
+    .dash-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 300; color: var(--greige-light); }
+    .dash-header h1 em { font-style: italic; color: var(--greige); }
+
+    .dash-tabs { background: var(--white); border-bottom: 1px solid var(--greige-light); padding: 0 4rem; display: flex; gap: 0; }
+    .dash-tab { padding: 1rem 1.5rem; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--charcoal); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; }
+    .dash-tab.active { color: var(--charcoal-dark); border-bottom-color: var(--charcoal-dark); }
+
+    .dash-content { max-width: 1000px; margin: 0 auto; padding: 3rem 2rem; }
+
+    /* BOOKING CARDS */
+    .bookings-list { display: flex; flex-direction: column; gap: 1rem; }
+    .booking-row { background: var(--white); border: 1px solid var(--greige-light); padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .booking-row-info {}
+    .booking-row-date { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--greige-dark); margin-bottom: 0.2rem; }
+    .booking-row-time { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--charcoal-dark); }
+    .booking-row-details { font-size: 0.8rem; color: var(--charcoal); margin-top: 0.2rem; }
+    .status-badge { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.8rem; }
+    .status-upcoming { background: var(--greige-light); color: var(--charcoal-dark); }
+    .status-cancelled { background: #fdf0f0; color: var(--error); }
+    .status-past { background: var(--greige-light); color: var(--greige-dark); }
+    .btn-cancel-booking { background: none; border: 1px solid var(--greige); color: var(--charcoal); font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.4rem 1rem; cursor: pointer; transition: all 0.2s; }
+    .btn-cancel-booking:hover { border-color: var(--error); color: var(--error); }
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--charcoal); }
+    .empty-state p { font-size: 0.95rem; line-height: 1.8; }
+
+    /* REQUEST FORM */
+    .request-form-wrap { max-width: 560px; }
+    .request-form-wrap h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; color: var(--charcoal-dark); margin-bottom: 0.5rem; }
+    .request-form-wrap .desc { font-size: 0.88rem; color: var(--charcoal); line-height: 1.7; margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--greige-light); }
+    .requests-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+    .request-row { background: var(--white); border: 1px solid var(--greige-light); padding: 1.2rem 1.5rem; }
+    .request-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; }
+    .request-date { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--charcoal-dark); }
+    .request-status { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.25rem 0.7rem; }
+    .req-pending { background: #fdf8f0; color: #8a5c1a; }
+    .req-confirmed { background: #f0f7f2; color: var(--success); }
+    .req-declined { background: #fdf0f0; color: var(--error); }
+    .request-details { font-size: 0.8rem; color: var(--charcoal); }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(58,57,53,0.6); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--white); max-width: 480px; width: 100%; padding: 2.5rem; position: relative; animation: slideUp 0.25s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-close { position: absolute; top: 1rem; right: 1.2rem; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--charcoal); }
+    .modal h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; font-weight: 300; color: var(--charcoal-dark); margin-bottom: 1.5rem; }
+
+    .loading { text-align: center; padding: 3rem; color: var(--charcoal); font-size: 0.85rem; letter-spacing: 0.05em; }
+
+    [data-auth="loggedout"] { display: none; }
+    [data-auth="loggedin"] { display: none; }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .dash-header { padding: 2rem 1.5rem; }
+      .dash-tabs { padding: 0 1rem; overflow-x: auto; }
+      .dash-content { padding: 2rem 1rem; }
+      .booking-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Aliza Pilates Studio</a>
+  <div class="nav-right">
+    <a href="booking.html" class="nav-link">Reservar clase</a>
+    <button class="btn-logout" id="logout-btn" style="display:none;" onclick="logout()">Cerrar sesión</button>
+  </div>
+</nav>
+
+<!-- LOGIN PAGE -->
+<div id="login-page">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-logo">ALIZA PILATES STUDIO</div>
+      <div class="auth-sub">Portal de Alumnas</div>
+      <h2>Iniciar sesión</h2>
+      <div id="login-alert"></div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" />
+      </div>
+      <button class="btn-primary" onclick="login()" id="login-btn">ENTRAR</button>
+      <div class="auth-switch">¿No tienes cuenta? <a onclick="showRegister()">Regístrate aquí</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER PAGE -->
+<div id="register-page" style="display:none;">
+  <div class="auth-page">
+    <div class="auth-box">
+      <div class="auth-logo">ALIZA PILATES STUDIO</div>
+      <div class="auth-sub">Crear cuenta</div>
+      <h2>Regístrate</h2>
+      <div id="register-alert"></div>
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-name" placeholder="Nombre y apellido" />
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" id="reg-phone" placeholder="6000-0000" />
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <button class="btn-primary" onclick="register()" id="register-btn">CREAR CUENTA</button>
+      <div class="auth-switch">¿Ya tienes cuenta? <a onclick="showLogin()">Inicia sesión</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+  <div class="dash-header">
+    <p>Portal de Alumna</p>
+    <h1>Bienvenida, <em id="user-name">—</em></h1>
+  </div>
+  <div class="dash-tabs">
+    <div class="dash-tab active" onclick="switchTab('bookings', this)">Mis Reservas</div>
+    <div class="dash-tab" onclick="switchTab('request', this)">Solicitar Clase</div>
+    <div class="dash-tab" onclick="switchTab('requests-history', this)">Mis Solicitudes</div>
+  </div>
+
+  <!-- MY BOOKINGS -->
+  <div class="dash-content" id="tab-bookings">
+    <div id="bookings-container"><div class="loading">Cargando reservas...</div></div>
+    <div style="margin-top:2rem;text-align:center;">
+      <a href="booking.html" style="display:inline-block;padding:0.9rem 2.5rem;background:var(--charcoal-dark);color:white;text-decoration:none;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;">+ RESERVAR NUEVA CLASE</a>
+    </div>
+  </div>
+
+  <!-- REQUEST CLASS -->
+  <div class="dash-content" id="tab-request" style="display:none;">
+    <div class="request-form-wrap">
+      <h3>Solicitar una <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">clase</em></h3>
+      <p class="desc">¿No encuentras el horario que necesitas? Envíanos una solicitud con tu fecha y hora preferida y nos pondremos en contacto contigo para confirmarlo.</p>
+      <div id="request-alert"></div>
+      <div class="form-group">
+        <label>Fecha preferida</label>
+        <input type="date" id="req-date" />
+      </div>
+      <div class="form-group">
+        <label>Hora preferida</label>
+        <select id="req-time">
+          <option value="">— Selecciona una hora —</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo de clase</label>
+        <select id="req-type">
+          <option value="Privada">Privada (1 persona)</option>
+          <option value="Dúo">Dúo (2 personas)</option>
+          <option value="Grupal">Grupal (3–4 personas)</option>
+          <option value="Mat Class">Mat Class</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notas adicionales (opcional)</label>
+        <textarea id="req-notes" placeholder="Ej: prefiero instructora específica, tengo alguna lesión, etc."></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitRequest()" id="req-btn">ENVIAR SOLICITUD</button>
+    </div>
+  </div>
+
+  <!-- MY REQUESTS -->
+  <div class="dash-content" id="tab-requests-history" style="display:none;">
+    <div id="requests-container"><div class="loading">Cargando solicitudes...</div></div>
+  </div>
+</div>
+
+<!-- CANCEL MODAL -->
+<div class="modal-overlay" id="cancel-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCancelModal()">×</button>
+    <h2>Cancelar reserva</h2>
+    <div id="cancel-modal-content"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentProfile = null;
+let myBookings = [];
+let cancelTargetId = null;
+
+// Populate 15-min time options
+function populateTimeOptions(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Selecciona una hora —</option>';
+  for (let h = 6; h <= 21; h++) {
+    [0, 15, 30, 45].forEach(m => {
+      const hStr = h.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, '0');
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const label = `${hour12}:${mStr} ${ampm}`;
+      sel.innerHTML += `<option value="${hStr}:${mStr}">${label}</option>`;
+    });
+  }
+}
+
+function showLogin() {
+  document.getElementById('register-page').style.display = 'none';
+  document.getElementById('login-page').style.display = 'block';
+}
+
+function showRegister() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('register-page').style.display = 'block';
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const alertEl = document.getElementById('login-alert');
+  const btn = document.getElementById('login-btn');
+  if (!email || !password) { alertEl.innerHTML = '<div class="alert alert-error">Por favor completa todos los campos.</div>'; return; }
+  btn.disabled = true; btn.textContent = 'ENTRANDO...';
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    alertEl.innerHTML = '<div class="alert alert-error">Correo o contraseña incorrectos.</div>';
+    btn.disabled = false; btn.textContent = 'ENTRAR'; return;
+  }
+  currentUser = data.user;
+  await loadDashboard();
+}
+
+async function register() {
+  const name = document.getElementById('reg-name').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const alertEl = document.getElementById('register-alert');
+  const btn = document.getElementById('register-btn');
+  if (!name || !phone || !email || !password) { alertEl.innerHTML = '<div class="alert alert-error">Por favor completa todos los campos.</div>'; return; }
+  if (password.length < 6) { alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>'; return; }
+  btn.disabled = true; btn.textContent = 'CREANDO CUENTA...';
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) {
+    alertEl.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+    btn.disabled = false; btn.textContent = 'CREAR CUENTA'; return;
+  }
+  currentUser = data.user;
+  await supabaseClient.from('customer_profiles').insert({ id: currentUser.id, full_name: name, phone });
+  await loadDashboard();
+}
+
+async function loadDashboard() {
+  const { data: profile } = await supabaseClient.from('customer_profiles').select('*').eq('id', currentUser.id).single();
+  currentProfile = profile;
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('register-page').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+  document.getElementById('logout-btn').style.display = 'block';
+  document.getElementById('user-name').textContent = profile?.full_name?.split(' ')[0] || 'Alumna';
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('req-date').min = today;
+  populateTimeOptions('req-time');
+  await loadBookings();
+}
+
+async function loadBookings() {
+  const { data } = await supabaseClient
+    .from('bookings')
+    .select('*, time_slots(*, instructors(name))')
+    .eq('customer_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  myBookings = data || [];
+  renderBookings();
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatTime(timeStr) {
+  const [h, m] = timeStr.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:${m} ${ampm}`;
+}
+
+function renderBookings() {
+  const container = document.getElementById('bookings-container');
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = myBookings.filter(b => !b.cancelled && b.time_slots?.date >= today);
+  const past = myBookings.filter(b => b.cancelled || b.time_slots?.date < today);
+  let html = '';
+
+  if (myBookings.length === 0) {
+    container.innerHTML = `<div class="empty-state"><p>Todavía no tienes reservas.<br>¡Reserva tu primera clase hoy!</p></div>`;
+    return;
+  }
+
+  if (upcoming.length > 0) {
+    html += `<p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:1rem;">Próximas clases</p>`;
+    html += '<div class="bookings-list">';
+    upcoming.forEach(b => {
+      const slot = b.time_slots;
+      html += `<div class="booking-row">
+        <div class="booking-row-info">
+          <div class="booking-row-date">${formatDate(slot?.date)}</div>
+          <div class="booking-row-time">${formatTime(slot?.start_time)}</div>
+          <div class="booking-row-details">${slot?.class_type} · ${slot?.instructors?.name}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+          <span class="status-badge status-upcoming">Confirmada</span>
+          <button class="btn-cancel-booking" onclick="openCancelModal('${b.id}')">Cancelar</button>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  if (past.length > 0) {
+    html += `<p style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--greige-dark);margin:2rem 0 1rem;">Clases pasadas</p>`;
+    html += '<div class="bookings-list">';
+    past.forEach(b => {
+      const slot = b.time_slots;
+      const isCancelled = b.cancelled;
+      html += `<div class="booking-row" style="opacity:0.65;">
+        <div class="booking-row-info">
+          <div class="booking-row-date">${formatDate(slot?.date)}</div>
+          <div class="booking-row-time">${formatTime(slot?.start_time)}</div>
+          <div class="booking-row-details">${slot?.class_type} · ${slot?.instructors?.name}</div>
+        </div>
+        <span class="status-badge ${isCancelled ? 'status-cancelled' : 'status-past'}">${isCancelled ? 'Cancelada' : 'Completada'}</span>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  container.innerHTML = html;
+}
+
+function openCancelModal(bookingId) {
+  const booking = myBookings.find(b => b.id === bookingId);
+  if (!booking) return;
+  cancelTargetId = bookingId;
+  const slot = booking.time_slots;
+  const classDateTime = new Date(`${slot.date}T${slot.start_time}`);
+  const hoursUntil = (classDateTime - new Date()) / (1000 * 60 * 60);
+
+  let content = `
+    <div style="background:var(--cream);padding:1rem 1.2rem;border-left:3px solid var(--greige-dark);margin-bottom:1.5rem;">
+      <p style="font-size:0.88rem;line-height:1.9;color:var(--charcoal-dark);">
+        <strong>Fecha:</strong> ${formatDate(slot.date)}<br>
+        <strong>Hora:</strong> ${formatTime(slot.start_time)}<br>
+        <strong>Instructora:</strong> ${slot.instructors?.name}<br>
+        <strong>Tipo:</strong> ${slot.class_type}
+      </p>
+    </div>`;
+
+  if (hoursUntil < 24) {
+    content += `<div class="alert alert-error"><strong>No es posible cancelar.</strong><br>Las cancelaciones deben hacerse con más de 24 horas de anticipación.</div>
+    <button class="btn-secondary" onclick="closeCancelModal()">CERRAR</button>`;
+  } else {
+    content += `<div class="alert alert-info">Tu clase es en <strong>${Math.floor(hoursUntil)} horas</strong>. ¿Confirmas la cancelación?</div>
+    <button class="btn-primary" style="background:var(--error);" onclick="confirmCancel()">SÍ, CANCELAR RESERVA</button>
+    <button class="btn-secondary" onclick="closeCancelModal()">MANTENER MI RESERVA</button>`;
+  }
+
+  document.getElementById('cancel-modal-content').innerHTML = content;
+  document.getElementById('cancel-modal').classList.add('active');
+}
+
+async function confirmCancel() {
+  const booking = myBookings.find(b => b.id === cancelTargetId);
+  await supabaseClient.from('bookings').update({ cancelled: true }).eq('id', cancelTargetId);
+  await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', booking.time_slots.id);
+  closeCancelModal();
+  await loadBookings();
+}
+
+function closeCancelModal() {
+  document.getElementById('cancel-modal').classList.remove('active');
+  cancelTargetId = null;
+}
+
+async function submitRequest() {
+  const date = document.getElementById('req-date').value;
+  const time = document.getElementById('req-time').value;
+  const type = document.getElementById('req-type').value;
+  const notes = document.getElementById('req-notes').value.trim();
+  const alertEl = document.getElementById('request-alert');
+  const btn = document.getElementById('req-btn');
+
+  if (!date || !time) { alertEl.innerHTML = '<div class="alert alert-error">Por favor selecciona fecha y hora.</div>'; return; }
+
+  btn.disabled = true; btn.textContent = 'ENVIANDO...';
+
+  const { error } = await supabaseClient.from('class_requests').insert({
+    customer_id: currentUser.id,
+    customer_name: currentProfile?.full_name,
+    customer_phone: currentProfile?.phone,
+    requested_date: date,
+    requested_time: time,
+    class_type: type,
+    notes: notes || null
+  });
+
+  btn.disabled = false; btn.textContent = 'ENVIAR SOLICITUD';
+
+  if (error) { alertEl.innerHTML = '<div class="alert alert-error">Error al enviar. Intenta de nuevo.</div>'; return; }
+
+  alertEl.innerHTML = '<div class="alert alert-success">¡Solicitud enviada! Nos pondremos en contacto contigo para confirmar.</div>';
+  document.getElementById('req-date').value = '';
+  document.getElementById('req-time').value = '';
+  document.getElementById('req-notes').value = '';
+  await loadRequests();
+}
+
+async function loadRequests() {
+  const { data } = await supabaseClient
+    .from('class_requests')
+    .select('*')
+    .eq('customer_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  const container = document.getElementById('requests-container');
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div class="empty-state"><p>Todavía no has enviado solicitudes de clase.</p></div>';
+    return;
+  }
+
+  const statusLabel = { pending: 'Pendiente', confirmed: 'Confirmada', declined: 'No disponible' };
+  const statusClass = { pending: 'req-pending', confirmed: 'req-confirmed', declined: 'req-declined' };
+
+  container.innerHTML = '<div class="requests-list">' + data.map(r => `
+    <div class="request-row">
+      <div class="request-row-top">
+        <div class="request-date">${formatDate(r.requested_date)} — ${formatTime(r.requested_time)}</div>
+        <span class="request-status ${statusClass[r.status] || 'req-pending'}">${statusLabel[r.status] || 'Pendiente'}</span>
+      </div>
+      <div class="request-details">${r.class_type}${r.notes ? ' · ' + r.notes : ''}</div>
+    </div>`).join('') + '</div>';
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-bookings').style.display = 'none';
+  document.getElementById('tab-request').style.display = 'none';
+  document.getElementById('tab-requests-history').style.display = 'none';
+  document.getElementById('tab-' + tab).style.display = 'block';
+  if (tab === 'requests-history') loadRequests();
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('login-page').style.display = 'block';
+  currentUser = null; currentProfile = null;
+}
+
+// Check existing session
+supabaseClient.auth.getSession().then(({ data }) => {
+  if (data.session) { currentUser = data.session.user; loadDashboard(); }
+});
+</script>
+</body>
+</html>
