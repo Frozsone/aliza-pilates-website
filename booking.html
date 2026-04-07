@@ -377,8 +377,12 @@ async function confirmBooking() {
   btn.disabled = true;
   btn.textContent = es ? 'PROCESANDO...' : 'PROCESSING...';
 
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const cancelCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
   const { error: bookingError } = await supabaseClient.from('bookings').insert({
-    slot_id: selectedSlot.id, customer_name: name, customer_phone: phone
+    slot_id: selectedSlot.id, customer_name: name, customer_phone: phone,
+    customer_id: session?.user?.id, cancellation_code: cancelCode, cancelled: false
   });
 
   if (bookingError) {
@@ -397,9 +401,23 @@ async function confirmBooking() {
     <div class="success-screen">
       <div class="success-icon">✓</div>
       <h3>${es ? '¡Reserva confirmada!' : 'Booking confirmed!'}</h3>
-      <p>${es ? `Tu clase con <strong>${selectedSlot.instructors?.name}</strong> el <strong>${formatDate(selectedSlot.date)}</strong> a las <strong>${formatTime(selectedSlot.start_time)}</strong> ha sido reservada.<br><br>Te esperamos en el estudio.` 
-               : `Your class with <strong>${selectedSlot.instructors?.name}</strong> on <strong>${formatDate(selectedSlot.date)}</strong> at <strong>${formatTime(selectedSlot.start_time)}</strong> has been booked.<br><br>We look forward to seeing you.`}</p>
-      <button class="btn-confirm" style="margin-top:2rem;" onclick="closeModal()">
+      <p>${es
+        ? `Tu clase con <strong>${selectedSlot.instructors?.name}</strong> el <strong>${formatDate(selectedSlot.date)}</strong> a las <strong>${formatTime(selectedSlot.start_time)}</strong> ha sido reservada.`
+        : `Your class with <strong>${selectedSlot.instructors?.name}</strong> on <strong>${formatDate(selectedSlot.date)}</strong> at <strong>${formatTime(selectedSlot.start_time)}</strong> has been booked.`}
+      </p>
+      <div style="margin:1.5rem 0;padding:1.2rem;background:var(--cream);border:1px solid var(--greige);">
+        <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:0.5rem;">
+          ${es ? 'Tu código de cancelación' : 'Your cancellation code'}
+        </p>
+        <p style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:var(--charcoal-dark);letter-spacing:0.2em;">${cancelCode}</p>
+        <p style="font-size:0.78rem;color:var(--charcoal);margin-top:0.4rem;">
+          ${es ? 'Guarda este código. Lo necesitarás si deseas cancelar tu clase.' : 'Save this code. You will need it if you want to cancel your class.'}
+        </p>
+      </div>
+      <a href="cancel.html" style="display:block;text-align:center;margin-bottom:0.8rem;font-size:0.78rem;color:var(--charcoal);letter-spacing:0.08em;">
+        ${es ? '¿Necesitas cancelar? Haz clic aquí' : 'Need to cancel? Click here'}
+      </a>
+      <button class="btn-confirm" style="margin-top:0.5rem;" onclick="closeModal()">
         ${es ? 'CERRAR' : 'CLOSE'}
       </button>
     </div>`;
@@ -416,6 +434,13 @@ document.getElementById('filter-type').addEventListener('change', renderSlots);
 document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
 
 loadData();
+
+// Require login
+supabaseClient.auth.getSession().then(({ data }) => {
+  if (!data.session) {
+    window.location.href = 'customer.html';
+  }
+});
 </script>
 </body>
 </html>
