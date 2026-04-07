@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cancelar Reserva — Aliza Pilates Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --greige: #C8C4B7; --greige-light: #E8E4D9; --greige-dark: #A8A49A;
+      --charcoal: #8B8578; --charcoal-dark: #5C5A55; --cream: #F7F5F0;
+      --white: #FFFFFF; --text-dark: #3A3935; --error: #C0392B; --success: #4A7C59;
+    }
+    body {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      background: var(--charcoal-dark);
+      color: var(--text-dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: rgba(247,245,240,0.97);
+      padding: 1.2rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(200,196,183,0.3);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--charcoal-dark);
+      text-decoration: none;
+    }
+    .nav-back {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--text-dark); }
+
+    .page-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .cancel-box {
+      background: var(--white);
+      max-width: 480px;
+      width: 100%;
+      padding: 3rem;
+    }
+
+    .box-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: var(--charcoal-dark);
+      text-align: center;
+      margin-bottom: 0.3rem;
+    }
+    .box-sub {
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--charcoal-dark);
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+    h2 em { font-style: italic; }
+
+    .desc {
+      font-size: 0.85rem;
+      color: var(--charcoal);
+      line-height: 1.75;
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--greige-light);
+    }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--charcoal);
+      margin-bottom: 0.5rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--greige);
+      background: var(--cream);
+      font-family: 'Jost', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      outline: none;
+      transition: border-color 0.2s;
+      letter-spacing: 0.05em;
+    }
+    .form-group input:focus { border-color: var(--charcoal-dark); }
+
+    .code-input {
+      font-family: 'Cormorant Garamond', serif !important;
+      font-size: 1.6rem !important;
+      letter-spacing: 0.3em !important;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 1rem;
+      background: var(--charcoal-dark);
+      color: var(--white);
+      border: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-primary:hover { background: var(--text-dark); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 0.9rem;
+      background: none;
+      border: 1px solid var(--greige);
+      color: var(--charcoal-dark);
+      font-family: 'Jost', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.8rem;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+    .btn-secondary:hover { background: var(--greige-light); }
+
+    .alert {
+      padding: 0.9rem 1rem;
+      margin-bottom: 1.2rem;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      border-radius: 0;
+    }
+    .alert-error { background: #fdf0f0; border-left: 3px solid var(--error); color: var(--error); }
+    .alert-warning { background: #fdf8f0; border-left: 3px solid #c9832a; color: #8a5c1a; }
+    .alert-success { background: #f0f7f2; border-left: 3px solid var(--success); color: var(--success); }
+
+    /* Booking preview card */
+    .booking-preview {
+      background: var(--cream);
+      border-left: 3px solid var(--greige-dark);
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+    .booking-preview p {
+      font-size: 0.85rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+    }
+    .booking-preview strong { font-weight: 500; }
+
+    /* Steps */
+    #step-code { display: block; }
+    #step-confirm { display: none; }
+    #step-done { display: none; }
+
+    /* Success */
+    .success-icon {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .success-msg {
+      font-size: 0.88rem;
+      color: var(--charcoal);
+      text-align: center;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.5rem; }
+      .cancel-box { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Aliza Pilates Studio</a>
+  <a href="index.html" class="nav-back">← Inicio</a>
+</nav>
+
+<div class="page-wrap">
+  <div class="cancel-box">
+    <div class="box-logo">ALIZA PILATES STUDIO</div>
+    <div class="box-sub">Cancelación de reserva</div>
+
+    <!-- STEP 1: Enter code -->
+    <div id="step-code">
+      <h2>Cancelar <em>reserva</em></h2>
+      <p class="desc">
+        Introduce tu código de cancelación para encontrar tu reserva.
+        Este código te fue enviado al confirmar tu clase.
+      </p>
+      <div id="code-alert"></div>
+      <div class="form-group">
+        <label>Código de cancelación</label>
+        <input
+          type="text"
+          id="cancel-code"
+          class="code-input"
+          placeholder="XXXXXX"
+          maxlength="6"
+          oninput="this.value = this.value.toUpperCase()"
+          onkeydown="if(event.key==='Enter') lookupCode()"
+        />
+      </div>
+      <button class="btn-primary" onclick="lookupCode()" id="lookup-btn">BUSCAR MI RESERVA</button>
+      <a href="customer.html" class="btn-secondary">Cancelar desde Mi Cuenta</a>
+    </div>
+
+    <!-- STEP 2: Confirm cancellation -->
+    <div id="step-confirm">
+      <h2>Confirmar <em>cancelación</em></h2>
+      <p class="desc">Hemos encontrado tu reserva. Revisa los detalles antes de cancelar.</p>
+      <div id="confirm-alert"></div>
+      <div class="booking-preview" id="booking-preview"></div>
+      <div id="hours-warning"></div>
+      <button class="btn-primary" style="background:var(--error);" onclick="confirmCancel()" id="confirm-btn">
+        SÍ, CANCELAR MI RESERVA
+      </button>
+      <button class="btn-secondary" onclick="goBack()">MANTENER MI RESERVA</button>
+    </div>
+
+    <!-- STEP 3: Done -->
+    <div id="step-done">
+      <div class="success-icon">✓</div>
+      <h2>Reserva <em>cancelada</em></h2>
+      <p class="success-msg">
+        Tu reserva ha sido cancelada correctamente.<br>
+        El horario ha quedado disponible para otras alumnas.
+      </p>
+      <a href="booking.html" class="btn-primary" style="display:block;text-align:center;text-decoration:none;">
+        RESERVAR OTRA CLASE
+      </a>
+      <a href="index.html" class="btn-secondary">VOLVER AL INICIO</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let foundBooking = null;
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('es-PA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function formatTime(timeStr) {
+  const [h, m] = timeStr.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:${m} ${ampm}`;
+}
+
+async function lookupCode() {
+  const code = document.getElementById('cancel-code').value.trim().toUpperCase();
+  const alertEl = document.getElementById('code-alert');
+  const btn = document.getElementById('lookup-btn');
+
+  if (!code || code.length < 6) {
+    alertEl.innerHTML = '<div class="alert alert-error">Por favor introduce tu código de 6 caracteres.</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'BUSCANDO...';
+  alertEl.innerHTML = '';
+
+  const { data, error } = await supabaseClient
+    .from('bookings')
+    .select('*, time_slots(*, instructors(name))')
+    .eq('cancellation_code', code)
+    .eq('cancelled', false)
+    .single();
+
+  btn.disabled = false;
+  btn.textContent = 'BUSCAR MI RESERVA';
+
+  if (error || !data) {
+    alertEl.innerHTML = '<div class="alert alert-error">No encontramos ninguna reserva activa con ese código. Verifica que lo hayas escrito correctamente.</div>';
+    return;
+  }
+
+  foundBooking = data;
+  const slot = data.time_slots;
+
+  // Show booking details
+  document.getElementById('booking-preview').innerHTML = `
+    <p>
+      <strong>Instructora:</strong> ${slot?.instructors?.name}<br>
+      <strong>Fecha:</strong> ${formatDate(slot?.date)}<br>
+      <strong>Hora:</strong> ${formatTime(slot?.start_time)}<br>
+      <strong>Tipo:</strong> ${slot?.class_type}<br>
+      <strong>Nombre:</strong> ${data.customer_name}
+    </p>`;
+
+  // Check 24-hour policy
+  const classDateTime = new Date(`${slot.date}T${slot.start_time}`);
+  const hoursUntil = (classDateTime - new Date()) / (1000 * 60 * 60);
+  const confirmBtn = document.getElementById('confirm-btn');
+  const warningEl = document.getElementById('hours-warning');
+
+  if (hoursUntil < 0) {
+    warningEl.innerHTML = '<div class="alert alert-error">Esta clase ya ha pasado y no puede cancelarse.</div>';
+    confirmBtn.disabled = true;
+  } else if (hoursUntil < 24) {
+    warningEl.innerHTML = `<div class="alert alert-warning"><strong>No es posible cancelar.</strong><br>Las cancelaciones deben realizarse con más de 24 horas de anticipación. Tu clase es en ${Math.floor(hoursUntil)} horas.</div>`;
+    confirmBtn.disabled = true;
+  } else {
+    warningEl.innerHTML = `<div class="alert alert-success">Tu clase es en <strong>${Math.floor(hoursUntil)} horas</strong>. Puedes cancelar hasta 24 horas antes.</div>`;
+    confirmBtn.disabled = false;
+  }
+
+  // Switch to confirm step
+  document.getElementById('step-code').style.display = 'none';
+  document.getElementById('step-confirm').style.display = 'block';
+}
+
+async function confirmCancel() {
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = true;
+  btn.textContent = 'CANCELANDO...';
+
+  const { error: bookingError } = await supabaseClient
+    .from('bookings')
+    .update({ cancelled: true })
+    .eq('id', foundBooking.id);
+
+  if (bookingError) {
+    document.getElementById('confirm-alert').innerHTML = '<div class="alert alert-error">Hubo un error. Por favor intenta de nuevo.</div>';
+    btn.disabled = false;
+    btn.textContent = 'SÍ, CANCELAR MI RESERVA';
+    return;
+  }
+
+  await supabaseClient
+    .from('time_slots')
+    .update({ is_booked: false })
+    .eq('id', foundBooking.time_slots.id);
+
+  document.getElementById('step-confirm').style.display = 'none';
+  document.getElementById('step-done').style.display = 'block';
+}
+
+function goBack() {
+  document.getElementById('step-confirm').style.display = 'none';
+  document.getElementById('step-code').style.display = 'block';
+  document.getElementById('code-alert').innerHTML = '';
+  document.getElementById('cancel-code').value = '';
+  foundBooking = null;
+}
+
+// Pre-fill code from URL param if present (e.g. cancel.html?code=ABC123)
+const params = new URLSearchParams(window.location.search);
+const urlCode = params.get('code');
+if (urlCode) {
+  document.getElementById('cancel-code').value = urlCode.toUpperCase();
+}
+</script>
+</body>
+</html>
