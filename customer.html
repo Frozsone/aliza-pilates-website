@@ -314,13 +314,18 @@ async function register() {
   if (!name || !phone || !email || !password) { alertEl.innerHTML = '<div class="alert alert-error">Por favor completa todos los campos.</div>'; return; }
   if (password.length < 6) { alertEl.innerHTML = '<div class="alert alert-error">La contraseña debe tener al menos 6 caracteres.</div>'; return; }
   btn.disabled = true; btn.textContent = 'CREANDO CUENTA...';
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name, phone } }
+  });
   if (error) {
     alertEl.innerHTML = `<div class="alert alert-error">${error.message}</div>`;
     btn.disabled = false; btn.textContent = 'CREAR CUENTA'; return;
   }
   currentUser = data.user;
-  await supabaseClient.from('customer_profiles').insert({ id: currentUser.id, full_name: name, phone });
+  // Also upsert profile in case the DB trigger hasn't fired yet
+  await supabaseClient.from('customer_profiles').upsert({ id: currentUser.id, full_name: name, phone }, { onConflict: 'id' });
   await loadDashboard();
 }
 
