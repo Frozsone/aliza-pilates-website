@@ -333,10 +333,23 @@ function renderSlots() {
   container.innerHTML = html;
 }
 
-function selectSlot(slotId) {
+async function selectSlot(slotId) {
   selectedSlot = allSlots.find(s => s.id === slotId);
   if (!selectedSlot) return;
   const es = isEs();
+
+  // Load user's profile to autofill
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  let profile = null;
+  if (session?.user?.id) {
+    const { data } = await supabaseClient
+      .from('customer_profiles')
+      .select('full_name, phone')
+      .eq('id', session.user.id)
+      .single();
+    profile = data;
+  }
+
   document.getElementById('modal-content').innerHTML = `
     <h2>${es ? 'Confirmar reserva' : 'Confirm booking'}</h2>
     <div class="modal-slot-info">
@@ -347,13 +360,11 @@ function selectSlot(slotId) {
         <strong>${es ? 'Tipo' : 'Type'}:</strong> ${selectedSlot.class_type}
       </p>
     </div>
-    <div class="form-group">
-      <label>${es ? 'Tu nombre completo' : 'Your full name'}</label>
-      <input type="text" id="customer-name" placeholder="${es ? 'Nombre y apellido' : 'First and last name'}" />
-    </div>
-    <div class="form-group">
-      <label>${es ? 'Tu número de teléfono' : 'Your phone number'}</label>
-      <input type="tel" id="customer-phone" placeholder="${es ? 'Ej: 6000-0000' : 'e.g. 6000-0000'}" />
+    <div style="background:var(--cream);border:1px solid var(--greige-light);padding:1rem 1.2rem;margin-bottom:1rem;">
+      <p style="font-size:0.78rem;color:var(--charcoal-dark);line-height:1.8;">
+        <strong>${es ? 'Alumna' : 'Student'}:</strong> ${profile?.full_name || session?.user?.email || '—'}<br>
+        <strong>${es ? 'Teléfono' : 'Phone'}:</strong> ${profile?.phone || '—'}
+      </p>
     </div>
     <div id="booking-error"></div>
     <button class="btn-confirm" onclick="confirmBooking()" id="confirm-btn">
@@ -363,26 +374,32 @@ function selectSlot(slotId) {
 }
 
 async function confirmBooking() {
-  const name = document.getElementById('customer-name').value.trim();
-  const phone = document.getElementById('customer-phone').value.trim();
   const es = isEs();
   const errEl = document.getElementById('booking-error');
-
-  if (!name || !phone) {
-    errEl.innerHTML = `<p class="error-msg">${es ? 'Por favor completa todos los campos.' : 'Please fill in all fields.'}</p>`;
-    return;
-  }
-
   const btn = document.getElementById('confirm-btn');
   btn.disabled = true;
   btn.textContent = es ? 'PROCESANDO...' : 'PROCESSING...';
 
   const { data: { session } } = await supabaseClient.auth.getSession();
-  const cancelCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+  // Fetch profile for name/phone
+  let name = '', phone = '';
+  if (session?.user?.id) {
+    const { data: profile } = await supabaseClient
+      .from('customer_profiles')
+      .select('full_name, phone')
+      .eq('id', session.user.id)
+      .single();
+    name = profile?.full_name || '';
+    phone = profile?.phone || '';
+  }
 
   const { error: bookingError } = await supabaseClient.from('bookings').insert({
-    slot_id: selectedSlot.id, customer_name: name, customer_phone: phone,
-    customer_id: session?.user?.id, cancellation_code: cancelCode, cancelled: false
+    slot_id: selectedSlot.id,
+    customer_name: name,
+    customer_phone: phone,
+    customer_id: session?.user?.id,
+    cancelled: false
   });
 
   if (bookingError) {
@@ -405,19 +422,17 @@ async function confirmBooking() {
         ? `Tu clase con <strong>${selectedSlot.instructors?.name}</strong> el <strong>${formatDate(selectedSlot.date)}</strong> a las <strong>${formatTime(selectedSlot.start_time)}</strong> ha sido reservada.`
         : `Your class with <strong>${selectedSlot.instructors?.name}</strong> on <strong>${formatDate(selectedSlot.date)}</strong> at <strong>${formatTime(selectedSlot.start_time)}</strong> has been booked.`}
       </p>
-      <div style="margin:1.5rem 0;padding:1.2rem;background:var(--cream);border:1px solid var(--greige);">
-        <p style="font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--greige-dark);margin-bottom:0.5rem;">
-          ${es ? 'Tu código de cancelación' : 'Your cancellation code'}
-        </p>
-        <p style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:500;color:var(--charcoal-dark);letter-spacing:0.2em;">${cancelCode}</p>
-        <p style="font-size:0.78rem;color:var(--charcoal);margin-top:0.4rem;">
-          ${es ? 'Guarda este código. Lo necesitarás si deseas cancelar tu clase.' : 'Save this code. You will need it if you want to cancel your class.'}
+      <div style="margin:1.5rem 0;padding:1.2rem;background:var(--cream);border:1px solid var(--greige);text-align:center;">
+        <p style="font-size:0.78rem;color:var(--charcoal);line-height:1.7;">
+          ${es
+            ? 'Puedes ver y cancelar tus reservas en cualquier momento desde <strong>Mi Cuenta</strong>.'
+            : 'You can view and cancel your bookings at any time from <strong>My Account</strong>.'}
         </p>
       </div>
-      <a href="cancel.html" style="display:block;text-align:center;margin-bottom:0.8rem;font-size:0.78rem;color:var(--charcoal);letter-spacing:0.08em;">
-        ${es ? '¿Necesitas cancelar? Haz clic aquí' : 'Need to cancel? Click here'}
+      <a href="customer.html" style="display:block;padding:1rem;background:var(--charcoal-dark);color:white;text-align:center;text-decoration:none;font-family:'Jost',sans-serif;font-size:0.78rem;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:0.8rem;">
+        ${es ? 'VER MIS RESERVAS' : 'VIEW MY BOOKINGS'}
       </a>
-      <button class="btn-confirm" style="margin-top:0.5rem;" onclick="closeModal()">
+      <button class="btn-confirm" style="background:none;border:1px solid var(--greige);color:var(--charcoal-dark);" onclick="closeModal()">
         ${es ? 'CERRAR' : 'CLOSE'}
       </button>
     </div>`;
