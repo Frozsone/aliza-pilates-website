@@ -179,6 +179,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab('upcoming', this)">Próximas</div>
         <div class="tab" onclick="switchTab('past', this)">Pasadas</div>
+        <div class="tab" onclick="switchTab('requests', this)">Solicitudes ●</div>
       </div>
       <div class="slots-list" id="slots-list"><div class="loading">Cargando...</div></div>
     </div>
@@ -192,7 +193,9 @@
         </div>
         <div class="form-group">
           <label>Hora de inicio</label>
-          <input type="time" id="new-time" />
+          <select id="new-time">
+            <option value="">— Selecciona hora —</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Tipo de clase</label>
@@ -229,6 +232,21 @@ let currentUser = null;
 let currentInstructor = null;
 let mySlots = [];
 let currentTab = 'upcoming';
+
+function populateTimeOptions() {
+  const sel = document.getElementById('new-time');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Selecciona hora —</option>';
+  for (let h = 6; h <= 21; h++) {
+    [0, 15, 30, 45].forEach(m => {
+      const hStr = h.toString().padStart(2, '0');
+      const mStr = m.toString().padStart(2, '0');
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      sel.innerHTML += `<option value="${hStr}:${mStr}">${hour12}:${mStr} ${ampm}</option>`;
+    });
+  }
+}
 
 async function login() {
   const email = document.getElementById('login-email').value.trim();
@@ -268,8 +286,35 @@ async function loadDashboard() {
 
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('new-date').min = today;
-
+  populateTimeOptions();
   await loadSlots();
+}
+
+async function loadRequests() {
+  const { data } = await supabaseClient
+    .from('class_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  const list = document.getElementById('slots-list');
+  if (!data || data.length === 0) {
+    list.innerHTML = '<div class="empty-state">No hay solicitudes de clase pendientes.</div>';
+    return;
+  }
+
+  const statusLabel = { pending: 'Pendiente', confirmed: 'Confirmada', declined: 'Rechazada' };
+  list.innerHTML = data.map(r => `
+    <div class="slot-row">
+      <div class="slot-row-info">
+        <div class="slot-row-date">${formatDate(r.requested_date)}</div>
+        <div class="slot-row-time">${formatTime(r.requested_time)}</div>
+        <div class="slot-row-type">${r.class_type} · ${r.customer_name} · ${r.customer_phone}</div>
+        ${r.notes ? `<div class="slot-row-type" style="font-style:italic;color:var(--charcoal);">"${r.notes}"</div>` : ''}
+      </div>
+      <div class="slot-row-actions">
+        <span style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.8rem;background:var(--greige-light);color:var(--charcoal-dark);">${statusLabel[r.status] || 'Pendiente'}</span>
+      </div>
+    </div>`).join('');
 }
 
 async function loadSlots() {
@@ -287,7 +332,7 @@ function switchTab(tab, el) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
-  renderSlots();
+  if (tab === 'requests') { loadRequests(); } else { renderSlots(); }
 }
 
 function formatDate(dateStr) {
