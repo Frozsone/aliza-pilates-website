@@ -222,6 +222,16 @@ const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function sendEmail(type, to, data) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ type, to, data })
+    });
+  } catch(e) { console.error('Email error:', e); }
+}
+
 let allSlots = [];
 let allInstructors = [];
 let selectedSlot = null;
@@ -413,6 +423,15 @@ async function confirmBooking() {
   const idx = allSlots.findIndex(s => s.id === selectedSlot.id);
   if (idx !== -1) allSlots[idx].is_booked = true;
   renderSlots();
+
+  // Send confirmation email
+  sendEmail('booking_confirmed', session.user.email, {
+    customer_name: name || session.user.email,
+    instructor_name: selectedSlot.instructors?.name,
+    date: selectedSlot.date,
+    time: selectedSlot.start_time,
+    class_type: selectedSlot.class_type
+  });
 
   document.getElementById('modal-content').innerHTML = `
     <div class="success-screen">
