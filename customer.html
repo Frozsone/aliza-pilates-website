@@ -44,6 +44,16 @@
     }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--charcoal-dark); }
     .form-group textarea { resize: vertical; min-height: 80px; }
+    .phone-row { display: flex; gap: 0; width: 100%; }
+    .phone-row select {
+      width: 120px; flex-shrink: 0; padding: 0.8rem 0.6rem;
+      border: 1px solid var(--greige); border-right: none;
+      background: var(--greige-light); font-family: 'Jost', sans-serif;
+      font-size: 0.82rem; color: var(--text-dark); outline: none;
+      cursor: pointer; appearance: auto; -webkit-appearance: auto;
+    }
+    .phone-row select:focus { border-color: var(--charcoal-dark); }
+    .phone-row input.phone-number { flex: 1 !important; width: auto !important; min-width: 0; border-radius: 0; }
     .btn-primary { width: 100%; padding: 1rem; background: var(--charcoal-dark); color: var(--white); border: none; font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
     .btn-primary:hover { background: var(--text-dark); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -167,7 +177,28 @@
       </div>
       <div class="form-group">
         <label>Teléfono</label>
-        <input type="tel" id="reg-phone" placeholder="6000-0000" />
+        <div class="phone-row">
+          <select id="reg-phone-code">
+            <option value="+507">🇵🇦 +507</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+52">🇲🇽 +52</option>
+            <option value="+57">🇨🇴 +57</option>
+            <option value="+58">🇻🇪 +58</option>
+            <option value="+506">🇨🇷 +506</option>
+            <option value="+502">🇬🇹 +502</option>
+            <option value="+504">🇭🇳 +504</option>
+            <option value="+503">🇸🇻 +503</option>
+            <option value="+505">🇳🇮 +505</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+51">🇵🇪 +51</option>
+            <option value="+56">🇨🇱 +56</option>
+            <option value="+55">🇧🇷 +55</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+972">🇮🇱 +972</option>
+          </select>
+          <input type="tel" id="reg-phone" class="phone-number" placeholder="6000-0000" />
+        </div>
       </div>
       <div class="form-group">
         <label>Correo electrónico</label>
@@ -258,7 +289,28 @@
       </div>
       <div class="form-group">
         <label>Teléfono</label>
-        <input type="tel" id="profile-phone" placeholder="6000-0000" />
+        <div class="phone-row">
+          <select id="profile-phone-code">
+            <option value="+507">🇵🇦 +507</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+52">🇲🇽 +52</option>
+            <option value="+57">🇨🇴 +57</option>
+            <option value="+58">🇻🇪 +58</option>
+            <option value="+506">🇨🇷 +506</option>
+            <option value="+502">🇬🇹 +502</option>
+            <option value="+504">🇭🇳 +504</option>
+            <option value="+503">🇸🇻 +503</option>
+            <option value="+505">🇳🇮 +505</option>
+            <option value="+54">🇦🇷 +54</option>
+            <option value="+51">🇵🇪 +51</option>
+            <option value="+56">🇨🇱 +56</option>
+            <option value="+55">🇧🇷 +55</option>
+            <option value="+34">🇪🇸 +34</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+972">🇮🇱 +972</option>
+          </select>
+          <input type="tel" id="profile-phone" class="phone-number" placeholder="6000-0000" />
+        </div>
       </div>
       <button class="btn-primary" onclick="saveProfile()" id="profile-btn" style="margin-bottom:2rem;">GUARDAR CAMBIOS</button>
 
@@ -368,7 +420,7 @@ async function login() {
 
 async function register() {
   const name = document.getElementById('reg-name').value.trim();
-  const phone = document.getElementById('reg-phone').value.trim();
+  const phone = (document.getElementById('reg-phone-code').value + document.getElementById('reg-phone').value.trim()).replace(/\s/g, '');
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
   const alertEl = document.getElementById('register-alert');
@@ -521,13 +573,11 @@ async function confirmCancel() {
   // For private bookings: always free the slot
   // For group bookings: only free the slot if it was full (is_booked=true) meaning count drops below 4
   if (booking.booking_mode === 'group') {
-    if (slot.is_booked) {
-      // Was full, now has a spot — re-open it
-      await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
-    }
-    // If not full yet, is_booked is already false — nothing to change
+    // Decrement the group count and reopen slot if it was full
+    const updates = { group_booking_count: Math.max(0, (slot.group_booking_count || 1) - 1) };
+    if (slot.is_booked) updates.is_booked = false;
+    await supabaseClient.from('time_slots').update(updates).eq('id', slot.id);
   } else {
-    // Private cancellation always frees the slot
     await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
   }
 
@@ -629,8 +679,22 @@ async function logout() {
 }
 
 function loadProfileTab() {
+  const savedPhone = currentProfile?.phone || '';
+  // Parse country code from saved phone if present
+  const codes = ['+507','+972','+506','+505','+504','+503','+502','+501','+1','+52','+57','+58','+54','+51','+56','+55','+34','+44'];
+  let detectedCode = '+507';
+  let localNumber = savedPhone;
+  for (const code of codes) {
+    if (savedPhone.startsWith(code)) {
+      detectedCode = code;
+      localNumber = savedPhone.slice(code.length);
+      break;
+    }
+  }
   document.getElementById('profile-name').value = currentProfile?.full_name || '';
-  document.getElementById('profile-phone').value = currentProfile?.phone || '';
+  const codeSelect = document.getElementById('profile-phone-code');
+  if (codeSelect) codeSelect.value = detectedCode;
+  document.getElementById('profile-phone').value = localNumber;
   document.getElementById('profile-email-current').value = currentUser?.email || '';
   document.getElementById('profile-email-new').value = '';
   document.getElementById('profile-password').value = '';
@@ -642,7 +706,7 @@ function loadProfileTab() {
 
 async function saveProfile() {
   const name = document.getElementById('profile-name').value.trim();
-  const phone = document.getElementById('profile-phone').value.trim();
+  const phone = (document.getElementById('profile-phone-code').value + document.getElementById('profile-phone').value.trim()).replace(/\s/g, '');
   const alertEl = document.getElementById('profile-alert');
   const btn = document.getElementById('profile-btn');
 
