@@ -241,6 +241,16 @@ const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+async function sendEmail(type, to, data) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ type, to, data })
+    });
+  } catch(e) { console.error('Email error:', e); }
+}
+
 let currentUser = null;
 let currentInstructor = null;
 let mySlots = [];
@@ -427,6 +437,26 @@ async function handleRequest(requestId, newStatus) {
     if (row) row.style.opacity = '1';
     alert('Error al actualizar la solicitud. Intenta de nuevo.');
     return;
+  }
+
+  // 4. Send email to student
+  const { data: profile } = await supabaseClient
+    .from('customer_profiles')
+    .select('email, full_name')
+    .eq('id', req.customer_id)
+    .single();
+
+  if (profile?.email) {
+    sendEmail(
+      newStatus === 'confirmed' ? 'request_confirmed' : 'request_declined',
+      profile.email,
+      {
+        customer_name: req.customer_name || profile.full_name,
+        date: req.requested_date,
+        time: req.requested_time,
+        class_type: req.class_type
+      }
+    );
   }
 
   await loadSlots();
