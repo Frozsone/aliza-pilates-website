@@ -211,12 +211,11 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Tipo de clase</label>
-          <select id="new-type">
-            <option value="Privada">Privada</option>
-            <option value="Dúo">Dúo</option>
-            <option value="Grupal">Grupal</option>
-            <option value="Mat Class">Mat Class</option>
+          <label>Modalidad</label>
+          <select id="new-mode">
+            <option value="both">Privada o Grupal (cliente elige)</option>
+            <option value="private_only">Solo Privada</option>
+            <option value="group_only">Solo Grupal (máx. 4 personas)</option>
           </select>
         </div>
         <div id="add-error"></div>
@@ -396,6 +395,7 @@ async function handleRequest(requestId, newStatus) {
         date: req.requested_date,
         start_time: req.requested_time,
         class_type: req.class_type,
+        slot_mode: req.class_type === 'Grupal' ? 'group_only' : 'private_only',
         is_booked: true
       })
       .select()
@@ -466,7 +466,7 @@ async function handleRequest(requestId, newStatus) {
 async function loadSlots() {
   const { data } = await supabaseClient
     .from('time_slots')
-    .select('*, bookings(*)')
+    .select('*, bookings(id, cancelled, booking_mode)')
     .eq('instructor_id', currentUser.id)
     .order('date').order('start_time');
 
@@ -510,10 +510,35 @@ function renderSlots() {
   }
 
   list.innerHTML = filtered.map(slot => {
-    const booking = slot.bookings?.[0];
-    const actionsHtml = slot.is_booked && booking
+    const activeBookings = (slot.bookings || []).filter(b => !b.cancelled);
+    const groupBookings = activeBookings.filter(b => b.booking_mode === 'group');
+    const privateBooking = activeBookings.find(b => b.booking_mode === 'private');
+    const mode = slot.slot_mode || 'both';
+
+    // Status display
+    let statusHtml = '';
+    if (mode === 'group_only' || (mode === 'both' && !privateBooking)) {
+      const count = groupBookings.length;
+      if (count === 0) {
+        statusHtml = `<span style="font-size:0.72rem;color:var(--charcoal);">Disponible</span>`;
+      } else if (count >= 4) {
+        statusHtml = `<span style="font-size:0.72rem;color:var(--success);">Grupal · 4/4 completo</span>`;
+      } else {
+        statusHtml = `<span style="font-size:0.72rem;color:var(--success);">Grupal · ${count}/4 reservados</span>`;
+      }
+    } else if (slot.is_booked) {
+      statusHtml = `<span style="font-size:0.72rem;color:var(--success);">Privada · Reservada</span>`;
+    } else {
+      statusHtml = `<span style="font-size:0.72rem;color:var(--charcoal);">Disponible</span>`;
+    }
+
+    const modeLabel = mode === 'group_only' ? 'Solo Grupal' : mode === 'private_only' ? 'Solo Privada' : 'Privada o Grupal';
+
+    // Actions
+    const booking = activeBookings[0];
+    const actionsHtml = (slot.is_booked || groupBookings.length > 0) && booking
       ? `<div class="slot-row-actions">
-           <div class="slot-booked-badge" onclick="showBookingInfo('${slot.id}')">Ver reserva</div>
+           <div class="slot-booked-badge" onclick="showBookingInfo('${slot.id}')">Ver reserva${groupBookings.length > 1 ? 's' : ''}</div>
            ${currentTab === 'upcoming' ? `<button class="btn-delete" onclick="deleteSlot('${slot.id}')">Cancelar</button>` : ''}
          </div>`
       : `<div class="slot-row-actions">
@@ -524,7 +549,7 @@ function renderSlots() {
       <div class="slot-row-info">
         <div class="slot-row-date">${formatDate(slot.date)}</div>
         <div class="slot-row-time">${formatTime(slot.start_time)}</div>
-        <div class="slot-row-type">${slot.class_type} · 1 hora · ${slot.is_booked ? '<span style="color:var(--success)">Reservada</span>' : '<span style="color:var(--charcoal)">Disponible</span>'}</div>
+        <div class="slot-row-type">${modeLabel} · ${statusHtml}</div>
       </div>
       ${actionsHtml}
     </div>`;
@@ -533,23 +558,40 @@ function renderSlots() {
 
 function showBookingInfo(slotId) {
   const slot = mySlots.find(s => s.id === slotId);
-  if (!slot || !slot.bookings?.[0]) return;
-  const b = slot.bookings[0];
-  const booked = new Date(b.created_at).toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
-  document.getElementById('info-content').innerHTML = `
-    <div class="info-row"><span class="info-label">Alumna</span><span class="info-value">${b.customer_name}</span></div>
-    <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${b.customer_phone}</span></div>
-    <div class="info-row"><span class="info-label">Clase</span><span class="info-value">${slot.class_type}</span></div>
-    <div class="info-row"><span class="info-label">Fecha</span><span class="info-value">${formatDate(slot.date)}</span></div>
-    <div class="info-row"><span class="info-label">Hora</span><span class="info-value">${formatTime(slot.start_time)}</span></div>
-    <div class="info-row"><span class="info-label">Reservado el</span><span class="info-value">${booked}</span></div>`;
+  if (!slot) return;
+  const activeBookings = (slot.bookings || []).filter(b => !b.cancelled);
+  if (activeBookings.length === 0) return;
+
+  const booked = (b) => new Date(b.created_at).toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  let rows = '';
+  if (activeBookings.length === 1) {
+    const b = activeBookings[0];
+    rows = `
+      <div class="info-row"><span class="info-label">Alumno/a</span><span class="info-value">${b.customer_name}</span></div>
+      <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${b.customer_phone}</span></div>
+      <div class="info-row"><span class="info-label">Modalidad</span><span class="info-value">${b.booking_mode === 'group' ? 'Grupal' : 'Privada'}</span></div>
+      <div class="info-row"><span class="info-label">Clase</span><span class="info-value">${formatDate(slot.date)} · ${formatTime(slot.start_time)}</span></div>`;
+  } else {
+    // Multiple group bookings
+    rows = `<div class="info-row"><span class="info-label">Clase grupal</span><span class="info-value">${activeBookings.length}/4 personas</span></div>`;
+    activeBookings.forEach((b, i) => {
+      rows += `
+        <div style="margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid var(--greige-light);">
+          <div class="info-row"><span class="info-label">Alumno/a ${i + 1}</span><span class="info-value">${b.customer_name}</span></div>
+          <div class="info-row"><span class="info-label">Teléfono</span><span class="info-value">${b.customer_phone}</span></div>
+        </div>`;
+    });
+  }
+
+  document.getElementById('info-content').innerHTML = rows;
   document.getElementById('info-overlay').classList.add('active');
 }
 
 async function addSlot() {
   const date = document.getElementById('new-date').value;
   const time = document.getElementById('new-time').value;
-  const type = document.getElementById('new-type').value;
+  const mode = document.getElementById('new-mode').value;
   const errEl = document.getElementById('add-error');
 
   if (!date || !time) {
@@ -559,7 +601,11 @@ async function addSlot() {
 
   errEl.innerHTML = '';
   const { error } = await supabaseClient.from('time_slots').insert({
-    instructor_id: currentUser.id, date, start_time: time, class_type: type
+    instructor_id: currentUser.id,
+    date,
+    start_time: time,
+    class_type: mode === 'group_only' ? 'Grupal' : 'Privada',
+    slot_mode: mode
   });
 
   if (error) {
