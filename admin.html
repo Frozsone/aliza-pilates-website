@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Aliza Pilates Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --greige: #C8C4B7; --greige-light: #E8E4D9; --greige-dark: #A8A49A;
+      --charcoal: #8B8578; --charcoal-dark: #5C5A55; --cream: #F7F5F0;
+      --white: #FFFFFF; --text-dark: #3A3935; --error: #C0392B; --success: #4A7C59;
+    }
+    body { font-family: 'Jost', sans-serif; font-weight: 300; background: var(--cream); color: var(--text-dark); min-height: 100vh; }
+
+    /* LOGIN */
+    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--charcoal-dark); padding: 2rem; }
+    .login-box { background: var(--white); padding: 3rem; max-width: 420px; width: 100%; }
+    .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--charcoal-dark); text-align: center; margin-bottom: 0.3rem; letter-spacing: 0.05em; }
+    .login-subtitle { font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--greige-dark); text-align: center; margin-bottom: 2.5rem; }
+    .login-box h2 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--charcoal-dark); text-align: center; margin-bottom: 2rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display: block; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--charcoal); margin-bottom: 0.5rem; }
+    .form-group input { width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--greige); background: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.9rem; color: var(--text-dark); outline: none; transition: border-color 0.2s; }
+    .form-group input:focus { border-color: var(--charcoal-dark); }
+    .btn-primary { width: 100%; padding: 1rem; background: var(--charcoal-dark); color: var(--white); border: none; font-family: 'Jost', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+    .btn-primary:hover { background: var(--text-dark); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg { color: var(--error); font-size: 0.8rem; margin-top: 0.5rem; text-align: center; }
+
+    /* DASHBOARD */
+    .dashboard { display: none; }
+    .dashboard.active { display: block; }
+
+    .top-nav { background: var(--charcoal-dark); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+    .top-nav-left { display: flex; align-items: center; gap: 1.5rem; }
+    .top-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--greige-light); }
+    .top-badge { font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; background: rgba(255,255,255,0.15); color: var(--greige-light); padding: 0.2rem 0.7rem; border-radius: 2px; }
+    .btn-logout { background: none; border: 1px solid var(--greige-dark); color: var(--greige-light); padding: 0.4rem 1rem; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .btn-logout:hover { background: rgba(255,255,255,0.1); }
+
+    /* STATS STRIP */
+    .stats-strip { background: var(--white); border-bottom: 1px solid var(--greige-light); display: grid; grid-template-columns: repeat(4, 1fr); }
+    .stat-item { padding: 1.5rem 2rem; border-right: 1px solid var(--greige-light); }
+    .stat-item:last-child { border-right: none; }
+    .stat-label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--greige-dark); margin-bottom: 0.4rem; }
+    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; color: var(--charcoal-dark); line-height: 1; }
+    .stat-sub { font-size: 0.72rem; color: var(--charcoal); margin-top: 0.3rem; }
+
+    /* TABS */
+    .tabs-bar { background: var(--white); border-bottom: 1px solid var(--greige-light); padding: 0 2rem; display: flex; gap: 0; overflow-x: auto; }
+    .tab { padding: 1rem 1.5rem; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--charcoal); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; white-space: nowrap; }
+    .tab.active { color: var(--charcoal-dark); border-bottom-color: var(--charcoal-dark); }
+
+    /* CONTENT */
+    .tab-content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* TABLE */
+    .data-table { width: 100%; border-collapse: collapse; background: var(--white); }
+    .data-table th { font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--greige-dark); padding: 0.8rem 1rem; border-bottom: 1px solid var(--greige-light); text-align: left; font-weight: 400; background: var(--cream); }
+    .data-table td { padding: 1rem; border-bottom: 1px solid var(--greige-light); font-size: 0.85rem; color: var(--charcoal-dark); vertical-align: middle; }
+    .data-table tr:hover td { background: #faf9f7; }
+    .data-table tr:last-child td { border-bottom: none; }
+
+    .badge { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.7rem; display: inline-block; }
+    .badge-confirmed { background: #f0f7f2; color: var(--success); }
+    .badge-cancelled { background: #fdf0f0; color: var(--error); }
+    .badge-past { background: var(--greige-light); color: var(--greige-dark); }
+    .badge-private { background: #f0f7f2; color: var(--success); }
+    .badge-group { background: var(--greige-light); color: var(--charcoal-dark); }
+    .badge-pending { background: #fdf8f0; color: #8a5c1a; }
+    .badge-declined { background: #fdf0f0; color: var(--error); }
+
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .section-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 300; color: var(--charcoal-dark); }
+    .section-header p { font-size: 0.8rem; color: var(--charcoal); margin-top: 0.2rem; }
+
+    .filter-row { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .filter-row select, .filter-row input {
+      padding: 0.6rem 0.9rem; border: 1px solid var(--greige); background: var(--white);
+      font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--text-dark); outline: none;
+    }
+    .filter-row select:focus, .filter-row input:focus { border-color: var(--charcoal-dark); }
+
+    .loading { padding: 3rem; text-align: center; color: var(--charcoal); font-size: 0.85rem; }
+    .empty { padding: 3rem; text-align: center; color: var(--charcoal); font-size: 0.9rem; line-height: 1.8; }
+
+    /* CUSTOMERS GRID */
+    .customers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .customer-card { background: var(--white); border: 1px solid var(--greige-light); padding: 1.5rem; }
+    .customer-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--charcoal-dark); margin-bottom: 0.3rem; }
+    .customer-card p { font-size: 0.8rem; color: var(--charcoal); line-height: 1.8; }
+    .customer-stat { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--greige-dark); margin-top: 0.8rem; }
+    .customer-stat strong { color: var(--charcoal-dark); font-weight: 500; }
+
+    @media (max-width: 768px) {
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .stat-item { border-bottom: 1px solid var(--greige-light); }
+      .top-nav { padding: 1rem 1.5rem; }
+      .tab-content { padding: 1.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page" class="login-page">
+  <div class="login-box">
+    <div class="login-logo">ALIZA PILATES STUDIO</div>
+    <div class="login-subtitle">Panel de Administración</div>
+    <h2>Acceso</h2>
+    <div class="form-group">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="tu@correo.com" />
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()" />
+    </div>
+    <div id="login-error"></div>
+    <button class="btn-primary" onclick="login()" id="login-btn">ENTRAR</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard">
+
+  <div class="top-nav">
+    <div class="top-nav-left">
+      <div class="top-logo">Aliza Pilates Studio</div>
+      <span class="top-badge">Admin</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Cerrar sesión</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-strip" id="stats-strip">
+    <div class="stat-item">
+      <div class="stat-label">Reservas activas</div>
+      <div class="stat-value" id="stat-bookings">—</div>
+      <div class="stat-sub">próximas clases</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Clases esta semana</div>
+      <div class="stat-value" id="stat-week">—</div>
+      <div class="stat-sub">slots programados</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Clientes registrados</div>
+      <div class="stat-value" id="stat-customers">—</div>
+      <div class="stat-sub">cuentas activas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-label">Solicitudes pendientes</div>
+      <div class="stat-value" id="stat-requests">—</div>
+      <div class="stat-sub">por responder</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-bar">
+    <div class="tab active" onclick="switchTab('bookings', this)">Todas las Reservas</div>
+    <div class="tab" onclick="switchTab('slots', this)">Horarios</div>
+    <div class="tab" onclick="switchTab('customers', this)">Clientes</div>
+    <div class="tab" onclick="switchTab('requests', this)">Solicitudes</div>
+  </div>
+
+  <div class="tab-content">
+
+    <!-- BOOKINGS TAB -->
+    <div id="tab-bookings" class="tab-panel active">
+      <div class="section-header">
+        <div>
+          <h2>Todas las <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">reservas</em></h2>
+          <p>Historial completo de reservas del estudio</p>
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="booking-filter-instructor">
+          <option value="">Todas las instructoras</option>
+        </select>
+        <select id="booking-filter-status">
+          <option value="">Todos los estados</option>
+          <option value="upcoming">Próximas</option>
+          <option value="past">Pasadas</option>
+          <option value="cancelled">Canceladas</option>
+        </select>
+        <select id="booking-filter-mode">
+          <option value="">Privada y Grupal</option>
+          <option value="private">Solo Privada</option>
+          <option value="group">Solo Grupal</option>
+        </select>
+        <input type="date" id="booking-filter-date" placeholder="Filtrar por fecha" />
+      </div>
+      <div id="bookings-table"><div class="loading">Cargando reservas...</div></div>
+    </div>
+
+    <!-- SLOTS TAB -->
+    <div id="tab-slots" class="tab-panel">
+      <div class="section-header">
+        <div>
+          <h2>Horarios <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">disponibles</em></h2>
+          <p>Todos los slots añadidos por instructoras</p>
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="slot-filter-instructor">
+          <option value="">Todas las instructoras</option>
+        </select>
+        <select id="slot-filter-status">
+          <option value="">Todos</option>
+          <option value="available">Disponibles</option>
+          <option value="booked">Reservados</option>
+        </select>
+      </div>
+      <div id="slots-table"><div class="loading">Cargando horarios...</div></div>
+    </div>
+
+    <!-- CUSTOMERS TAB -->
+    <div id="tab-customers" class="tab-panel">
+      <div class="section-header">
+        <div>
+          <h2>Clientes <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">registrados</em></h2>
+          <p>Todos los alumnos con cuenta en el portal</p>
+        </div>
+      </div>
+      <div id="customers-grid"><div class="loading">Cargando clientes...</div></div>
+    </div>
+
+    <!-- REQUESTS TAB -->
+    <div id="tab-requests" class="tab-panel">
+      <div class="section-header">
+        <div>
+          <h2>Solicitudes de <em style="font-style:italic;font-family:'Cormorant Garamond',serif;">clase</em></h2>
+          <p>Solicitudes enviadas por alumnos</p>
+        </div>
+      </div>
+      <div class="filter-row">
+        <select id="req-filter-status">
+          <option value="">Todos los estados</option>
+          <option value="pending">Pendientes</option>
+          <option value="confirmed">Confirmadas</option>
+          <option value="declined">Rechazadas</option>
+        </select>
+      </div>
+      <div id="requests-table"><div class="loading">Cargando solicitudes...</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://jpbouksgzaaykkqgsipa.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwYm91a3NnemFheWtrcWdzaXBhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NzQyNTUsImV4cCI6MjA4OTQ1MDI1NX0.XxoVzmz7BACVvI3UYUhoxG-p7W7Ck8EGbMXK9IB2azg';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ADMIN EMAIL — only this email can access the admin panel
+const ADMIN_EMAIL = 'jackmizd@gmail.com';
+
+let currentUser = null;
+let allInstructors = [];
+let allBookings = [];
+let allSlots = [];
+let allCustomers = [];
+let allRequests = [];
+
+function formatDate(d) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('es-PA', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
+function formatTime(t) {
+  const [h, m] = t.split(':');
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const h12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${h12}:${m} ${ampm}`;
+}
+function formatDateTime(ts) {
+  return new Date(ts).toLocaleDateString('es-PA', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function login() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+
+  if (!email || !password) { errEl.innerHTML = '<p class="error-msg">Completa todos los campos.</p>'; return; }
+
+  btn.disabled = true; btn.textContent = 'ENTRANDO...';
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  btn.disabled = false; btn.textContent = 'ENTRAR';
+
+  if (error || data.user.email !== ADMIN_EMAIL) {
+    await supabase.auth.signOut();
+    errEl.innerHTML = '<p class="error-msg">Acceso no autorizado.</p>';
+    return;
+  }
+
+  currentUser = data.user;
+  await loadDashboard();
+}
+
+async function loadDashboard() {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+  await Promise.all([loadInstructors(), loadBookings(), loadSlots(), loadCustomers(), loadRequests()]);
+  updateStats();
+  renderBookings();
+}
+
+async function loadInstructors() {
+  const { data } = await supabase.from('instructors').select('*');
+  allInstructors = data || [];
+  ['booking-filter-instructor', 'slot-filter-instructor'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    allInstructors.forEach(i => { sel.innerHTML += `<option value="${i.id}">${i.name}</option>`; });
+  });
+}
+
+async function loadBookings() {
+  const { data } = await supabase
+    .from('bookings')
+    .select('*, time_slots(date, start_time, class_type, slot_mode, instructors(name)), customer_profiles(full_name, phone, email)')
+    .order('created_at', { ascending: false });
+  allBookings = data || [];
+}
+
+async function loadSlots() {
+  const { data } = await supabase
+    .from('time_slots')
+    .select('*, instructors(name), bookings(id, cancelled, booking_mode, customer_name)')
+    .order('date', { ascending: false }).order('start_time');
+  allSlots = data || [];
+}
+
+async function loadCustomers() {
+  const { data } = await supabase.from('customer_profiles').select('*').order('created_at', { ascending: false });
+  allCustomers = data || [];
+}
+
+async function loadRequests() {
+  const { data } = await supabase.from('class_requests').select('*, customer_profiles(full_name, email)').order('created_at', { ascending: false });
+  allRequests = data || [];
+}
+
+function updateStats() {
+  const today = new Date().toISOString().split('T')[0];
+  const weekEnd = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+
+  const activeBookings = allBookings.filter(b => !b.cancelled && b.time_slots?.date >= today).length;
+  const weekSlots = allSlots.filter(s => s.date >= today && s.date <= weekEnd).length;
+  const pendingReqs = allRequests.filter(r => r.status === 'pending').length;
+
+  document.getElementById('stat-bookings').textContent = activeBookings;
+  document.getElementById('stat-week').textContent = weekSlots;
+  document.getElementById('stat-customers').textContent = allCustomers.length;
+  document.getElementById('stat-requests').textContent = pendingReqs;
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'bookings') renderBookings();
+  if (tab === 'slots') renderSlots();
+  if (tab === 'customers') renderCustomers();
+  if (tab === 'requests') renderRequests();
+}
+
+function renderBookings() {
+  const today = new Date().toISOString().split('T')[0];
+  const instrFilter = document.getElementById('booking-filter-instructor').value;
+  const statusFilter = document.getElementById('booking-filter-status').value;
+  const modeFilter = document.getElementById('booking-filter-mode').value;
+  const dateFilter = document.getElementById('booking-filter-date').value;
+
+  let filtered = allBookings.filter(b => {
+    const slot = b.time_slots;
+    if (instrFilter && slot?.instructors?.name !== allInstructors.find(i => i.id === instrFilter)?.name) return false;
+    if (modeFilter && b.booking_mode !== modeFilter) return false;
+    if (dateFilter && slot?.date !== dateFilter) return false;
+    if (statusFilter === 'upcoming' && (b.cancelled || slot?.date < today)) return false;
+    if (statusFilter === 'past' && (b.cancelled || slot?.date >= today)) return false;
+    if (statusFilter === 'cancelled' && !b.cancelled) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('bookings-table').innerHTML = '<div class="empty">No hay reservas con estos filtros.</div>';
+    return;
+  }
+
+  document.getElementById('bookings-table').innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>Cliente</th><th>Instructora</th><th>Fecha</th><th>Hora</th>
+        <th>Modalidad</th><th>Estado</th><th>Reservado</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(b => {
+          const slot = b.time_slots;
+          const profile = b.customer_profiles;
+          const isUpcoming = !b.cancelled && slot?.date >= today;
+          const statusBadge = b.cancelled
+            ? '<span class="badge badge-cancelled">Cancelada</span>'
+            : slot?.date >= today
+              ? '<span class="badge badge-confirmed">Confirmada</span>'
+              : '<span class="badge badge-past">Completada</span>';
+          return `<tr>
+            <td><strong>${profile?.full_name || b.customer_name || '—'}</strong><br><span style="font-size:0.75rem;color:var(--charcoal);">${profile?.phone || ''}</span></td>
+            <td>${slot?.instructors?.name || '—'}</td>
+            <td>${slot?.date ? formatDate(slot.date) : '—'}</td>
+            <td>${slot?.start_time ? formatTime(slot.start_time) : '—'}</td>
+            <td><span class="badge badge-${b.booking_mode}">${b.booking_mode === 'group' ? 'Grupal' : 'Privada'}</span></td>
+            <td>${statusBadge}</td>
+            <td style="font-size:0.75rem;color:var(--charcoal);">${formatDateTime(b.created_at)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderSlots() {
+  const instrFilter = document.getElementById('slot-filter-instructor').value;
+  const statusFilter = document.getElementById('slot-filter-status').value;
+
+  let filtered = allSlots.filter(s => {
+    if (instrFilter && s.instructor_id !== instrFilter) return false;
+    if (statusFilter === 'available' && s.is_booked) return false;
+    if (statusFilter === 'booked' && !s.is_booked) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    document.getElementById('slots-table').innerHTML = '<div class="empty">No hay horarios con estos filtros.</div>';
+    return;
+  }
+
+  const modeLabel = m => m === 'private_only' ? 'Solo Privada' : m === 'group_only' ? 'Solo Grupal' : 'Privada o Grupal';
+
+  document.getElementById('slots-table').innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>Instructora</th><th>Fecha</th><th>Hora</th><th>Modalidad</th>
+        <th>Estado</th><th>Reservado por</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(s => {
+          const activeBookings = (s.bookings || []).filter(b => !b.cancelled);
+          const names = activeBookings.map(b => b.customer_name).filter(Boolean).join(', ');
+          const statusBadge = s.is_booked
+            ? '<span class="badge badge-confirmed">Completo</span>'
+            : '<span class="badge badge-past">Disponible</span>';
+          return `<tr>
+            <td>${s.instructors?.name || '—'}</td>
+            <td>${formatDate(s.date)}</td>
+            <td>${formatTime(s.start_time)}</td>
+            <td>${modeLabel(s.slot_mode)}</td>
+            <td>${statusBadge}</td>
+            <td style="font-size:0.8rem;color:var(--charcoal);">${names || '—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function renderCustomers() {
+  if (allCustomers.length === 0) {
+    document.getElementById('customers-grid').innerHTML = '<div class="empty">No hay clientes registrados aún.</div>';
+    return;
+  }
+
+  document.getElementById('customers-grid').innerHTML = `<div class="customers-grid">` +
+    allCustomers.map(c => {
+      const bookingCount = allBookings.filter(b => b.customer_profiles?.full_name === c.full_name && !b.cancelled).length;
+      return `<div class="customer-card">
+        <h4>${c.full_name || 'Sin nombre'}</h4>
+        <p>${c.email || '—'}<br>${c.phone || '—'}</p>
+        <div class="customer-stat">Clases reservadas: <strong>${bookingCount}</strong></div>
+        <div class="customer-stat" style="font-size:0.65rem;margin-top:0.3rem;">Registrado: ${new Date(c.created_at).toLocaleDateString('es-PA', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+function renderRequests() {
+  const statusFilter = document.getElementById('req-filter-status').value;
+  const filtered = statusFilter ? allRequests.filter(r => r.status === statusFilter) : allRequests;
+  const statusLabel = { pending: 'Pendiente', confirmed: 'Confirmada', declined: 'Rechazada' };
+  const badgeClass = { pending: 'badge-pending', confirmed: 'badge-confirmed', declined: 'badge-cancelled' };
+
+  if (filtered.length === 0) {
+    document.getElementById('requests-table').innerHTML = '<div class="empty">No hay solicitudes.</div>';
+    return;
+  }
+
+  document.getElementById('requests-table').innerHTML = `
+    <table class="data-table">
+      <thead><tr>
+        <th>Cliente</th><th>Fecha solicitada</th><th>Hora</th>
+        <th>Tipo</th><th>Notas</th><th>Estado</th><th>Enviado</th>
+      </tr></thead>
+      <tbody>
+        ${filtered.map(r => `<tr>
+          <td><strong>${r.customer_name || r.customer_profiles?.full_name || '—'}</strong><br>
+            <span style="font-size:0.75rem;color:var(--charcoal);">${r.customer_phone || r.customer_profiles?.email || ''}</span></td>
+          <td>${formatDate(r.requested_date)}</td>
+          <td>${formatTime(r.requested_time)}</td>
+          <td>${r.class_type}</td>
+          <td style="font-size:0.78rem;font-style:italic;color:var(--charcoal);">${r.notes || '—'}</td>
+          <td><span class="badge ${badgeClass[r.status] || 'badge-pending'}">${statusLabel[r.status] || 'Pendiente'}</span></td>
+          <td style="font-size:0.75rem;color:var(--charcoal);">${formatDateTime(r.created_at)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// Filter listeners
+document.getElementById('booking-filter-instructor').addEventListener('change', renderBookings);
+document.getElementById('booking-filter-status').addEventListener('change', renderBookings);
+document.getElementById('booking-filter-mode').addEventListener('change', renderBookings);
+document.getElementById('booking-filter-date').addEventListener('change', renderBookings);
+document.getElementById('slot-filter-instructor').addEventListener('change', renderSlots);
+document.getElementById('slot-filter-status').addEventListener('change', renderSlots);
+document.getElementById('req-filter-status').addEventListener('change', renderRequests);
+
+async function logout() {
+  await supabase.auth.signOut();
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('login-page').style.display = 'flex';
+  currentUser = null;
+}
+
+// Check existing session
+supabase.auth.getSession().then(({ data }) => {
+  if (data.session && data.session.user.email === ADMIN_EMAIL) {
+    currentUser = data.session.user;
+    loadDashboard();
+  }
+});
+</script>
+</body>
+</html>
