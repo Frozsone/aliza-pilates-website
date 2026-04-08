@@ -408,7 +408,7 @@ async function loadDashboard() {
 async function loadBookings() {
   const { data } = await supabaseClient
     .from('bookings')
-    .select('*, time_slots(*, instructors(name))')
+    .select('*, time_slots(*, instructors(name)), booking_mode')
     .eq('customer_id', currentUser.id)
     .order('created_at', { ascending: false });
   myBookings = data || [];
@@ -449,7 +449,7 @@ function renderBookings() {
         <div class="booking-row-info">
           <div class="booking-row-date">${formatDate(slot?.date)}</div>
           <div class="booking-row-time">${formatTime(slot?.start_time)}</div>
-          <div class="booking-row-details">${slot?.class_type} · ${slot?.instructors?.name}</div>
+          <div class="booking-row-details">${slot?.instructors?.name} · <span style="font-size:0.72rem;padding:0.15rem 0.5rem;background:${b.booking_mode === 'group' ? 'var(--greige-light)' : '#f0f7f2'};color:${b.booking_mode === 'group' ? 'var(--charcoal-dark)' : '#4A7C59'};">${b.booking_mode === 'group' ? 'Grupal' : 'Privada'}</span></div>
         </div>
         <div style="display:flex;align-items:center;gap:1rem;">
           <span class="status-badge status-upcoming">Confirmada</span>
@@ -470,7 +470,7 @@ function renderBookings() {
         <div class="booking-row-info">
           <div class="booking-row-date">${formatDate(slot?.date)}</div>
           <div class="booking-row-time">${formatTime(slot?.start_time)}</div>
-          <div class="booking-row-details">${slot?.class_type} · ${slot?.instructors?.name}</div>
+          <div class="booking-row-details">${slot?.instructors?.name} · <span style="font-size:0.72rem;padding:0.15rem 0.5rem;background:var(--greige-light);color:var(--greige-dark);">${b.booking_mode === 'group' ? 'Grupal' : 'Privada'}</span></div>
         </div>
         <span class="status-badge ${isCancelled ? 'status-cancelled' : 'status-past'}">${isCancelled ? 'Cancelada' : 'Completada'}</span>
       </div>`;
@@ -514,16 +514,30 @@ function openCancelModal(bookingId) {
 
 async function confirmCancel() {
   const booking = myBookings.find(b => b.id === cancelTargetId);
+  const slot = booking.time_slots;
+
   await supabaseClient.from('bookings').update({ cancelled: true }).eq('id', cancelTargetId);
-  await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', booking.time_slots.id);
+
+  // For private bookings: always free the slot
+  // For group bookings: only free the slot if it was full (is_booked=true) meaning count drops below 4
+  if (booking.booking_mode === 'group') {
+    if (slot.is_booked) {
+      // Was full, now has a spot — re-open it
+      await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
+    }
+    // If not full yet, is_booked is already false — nothing to change
+  } else {
+    // Private cancellation always frees the slot
+    await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
+  }
 
   // Send cancellation email
   sendEmail('booking_cancelled', currentUser.email, {
     customer_name: currentProfile?.full_name || currentUser.email,
-    instructor_name: booking.time_slots?.instructors?.name,
-    date: booking.time_slots?.date,
-    time: booking.time_slots?.start_time,
-    class_type: booking.time_slots?.class_type
+    instructor_name: slot?.instructors?.name,
+    date: slot?.date,
+    time: slot?.start_time,
+    class_type: booking.booking_mode === 'group' ? 'Grupal' : 'Privada'
   });
 
   closeCancelModal();
