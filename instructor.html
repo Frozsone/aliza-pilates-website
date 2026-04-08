@@ -466,7 +466,7 @@ async function handleRequest(requestId, newStatus) {
 async function loadSlots() {
   const { data } = await supabaseClient
     .from('time_slots')
-    .select('*, bookings(id, cancelled, booking_mode)')
+    .select('*, bookings(id, cancelled, booking_mode, customer_name, customer_phone)')
     .eq('instructor_id', currentUser.id)
     .order('date').order('start_time');
 
