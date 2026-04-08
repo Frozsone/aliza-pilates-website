@@ -242,7 +242,7 @@ async function loadData() {
   const { data: instructors } = await supabaseClient.from('instructors').select('*');
   const { data: slots } = await supabaseClient
     .from('time_slots')
-    .select('*, instructors(name), bookings(id, cancelled, booking_mode)')
+    .select('*, instructors(name), group_booking_count')
     .gte('date', new Date().toISOString().split('T')[0])
     .order('date').order('start_time');
 
@@ -258,8 +258,8 @@ async function loadData() {
   renderSlots();
 }
 
-function getActiveGroupBookings(slot) {
-  return (slot.bookings || []).filter(b => !b.cancelled && b.booking_mode === 'group');
+function getGroupCount(slot) {
+  return slot.group_booking_count || 0;
 }
 
 function getFilteredSlots() {
@@ -269,7 +269,7 @@ function getFilteredSlots() {
     if (date && s.date !== date) return false;
     if (instructor && s.instructor_id !== instructor) return false;
     // Hide fully-booked slots
-    const groupCount = getActiveGroupBookings(s).length;
+    const groupCount = getGroupCount(s);
     const isGroupFull = groupCount >= 4;
     if (s.slot_mode === 'private_only' && s.is_booked) return false;
     if (s.slot_mode === 'group_only' && isGroupFull) return false;
@@ -326,15 +326,16 @@ function renderSlots() {
       <div class="slots-grid">`;
 
     group.slots.forEach(slot => {
-      const groupCount = getActiveGroupBookings(slot).length;
+      const groupCount = getGroupCount(slot);
       const spotsLeft = 4 - groupCount;
       const mode = slot.slot_mode || 'both';
 
-      // Build badge
+      // Build badge — if 'both' but already has group bookings, show as group
+      const effectiveMode = (mode === 'both' && groupCount > 0) ? 'group_only' : mode;
       let badge = '';
-      if (mode === 'private_only') {
+      if (effectiveMode === 'private_only') {
         badge = `<div class="slot-mode-badge private">${isEs() ? 'Solo Privada' : 'Private Only'}</div>`;
-      } else if (mode === 'group_only') {
+      } else if (effectiveMode === 'group_only') {
         badge = `<div class="slot-mode-badge group">${isEs() ? `Grupal · ${spotsLeft} lugar${spotsLeft !== 1 ? 'es' : ''} libre${spotsLeft !== 1 ? 's' : ''}` : `Group · ${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''} left`}</div>`;
       } else {
         badge = `<div class="slot-mode-badge both">${isEs() ? 'Privada o Grupal' : 'Private or Group'}</div>`;
@@ -357,7 +358,7 @@ async function selectSlot(slotId) {
   if (!selectedSlot) return;
   const es = isEs();
   const mode = selectedSlot.slot_mode || 'both';
-  const groupCount = getActiveGroupBookings(selectedSlot).length;
+  const groupCount = getGroupCount(selectedSlot);
   const spotsLeft = 4 - groupCount;
 
   // Load profile
@@ -390,13 +391,14 @@ async function selectSlot(slotId) {
     modeSelector = `<div style="background:#f0f7f2;border-left:3px solid #4A7C59;padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.82rem;color:#3a6347;">
       ${es ? '🔒 Esta clase es <strong>solo privada</strong> — tendrás la instructora para ti solo.' : '🔒 This class is <strong>private only</strong> — you will have the instructor all to yourself.'}
     </div>`;
-  } else if (mode === 'group_only') {
+  } else if (mode === 'group_only' || groupCount > 0) {
+    // group_only slots, OR 'both' slots that already have group bookings → group only, no private option
     selectedBookingMode = 'group';
     modeSelector = `<div style="background:var(--greige-light);border-left:3px solid var(--greige-dark);padding:0.8rem 1rem;margin-bottom:1rem;font-size:0.82rem;color:var(--charcoal-dark);">
       ${es ? `👥 Esta es una <strong>clase grupal</strong> — quedan <strong>${spotsLeft} lugar${spotsLeft !== 1 ? 'es' : ''}</strong> de 4.` : `👥 This is a <strong>group class</strong> — <strong>${spotsLeft} spot${spotsLeft !== 1 ? 's' : ''}</strong> of 4 remaining.`}
     </div>`;
   } else {
-    // Both — show toggle
+    // 'both' slot with no bookings yet — customer can choose
     selectedBookingMode = 'private';
     modeSelector = `
       <div style="margin-bottom:1.2rem;">
@@ -485,23 +487,21 @@ async function confirmBooking() {
   }
 
   // Private booking → slot disappears (is_booked = true)
-  // Group booking → only mark is_booked when 4/4 spots filled
+  // Group booking → increment counter, only mark full at 4
   if (selectedBookingMode === 'private') {
     await supabaseClient.from('time_slots').update({ is_booked: true }).eq('id', selectedSlot.id);
-  } else {
-    const newGroupCount = getActiveGroupBookings(selectedSlot).length + 1;
-    if (newGroupCount >= 4) {
-      await supabaseClient.from('time_slots').update({ is_booked: true }).eq('id', selectedSlot.id);
-    }
-    // Update local count
-    if (!selectedSlot.bookings) selectedSlot.bookings = [];
-    selectedSlot.bookings.push({ id: 'new', cancelled: false, booking_mode: 'group' });
-  }
-
-  // Update local slot state and re-render
-  if (selectedBookingMode === 'private') {
     const idx = allSlots.findIndex(s => s.id === selectedSlot.id);
     if (idx !== -1) allSlots[idx].is_booked = true;
+  } else {
+    const newCount = getGroupCount(selectedSlot) + 1;
+    const updates = { group_booking_count: newCount };
+    if (newCount >= 4) updates.is_booked = true;
+    await supabaseClient.from('time_slots').update(updates).eq('id', selectedSlot.id);
+    const idx = allSlots.findIndex(s => s.id === selectedSlot.id);
+    if (idx !== -1) {
+      allSlots[idx].group_booking_count = newCount;
+      if (newCount >= 4) allSlots[idx].is_booked = true;
+    }
   }
   renderSlots();
 
