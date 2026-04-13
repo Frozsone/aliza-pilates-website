@@ -372,22 +372,31 @@ async function handleRequest(requestId, newStatus) {
   const row = document.getElementById(`req-${requestId}`);
   if (row) row.style.opacity = '0.5';
 
-  // If confirming, create a real time_slot + booking so it appears in both schedules
+  // Fetch the request first — needed for both confirm and decline
+  const { data: req, error: reqErr } = await supabaseClient
+    .from('class_requests')
+    .select('*')
+    .eq('id', requestId)
+    .single();
+
+  if (reqErr || !req) {
+    if (row) row.style.opacity = '1';
+    alert('Error al obtener la solicitud. Intenta de nuevo.');
+    return;
+  }
+
+  // Fetch student profile for email
+  const { data: profile } = await supabaseClient
+    .from('customer_profiles')
+    .select('email, full_name')
+    .eq('id', req.customer_id)
+    .single();
+
   if (newStatus === 'confirmed') {
-    // Find the request data from the DOM (re-fetch to be safe)
-    const { data: req, error: reqErr } = await supabaseClient
-      .from('class_requests')
-      .select('*')
-      .eq('id', requestId)
-      .single();
+    // 1. Create the time slot
+    const bookingMode = (req.class_type === 'Grupal') ? 'group' : 'private';
+    const slotMode = (req.class_type === 'Grupal') ? 'group_only' : 'private_only';
 
-    if (reqErr || !req) {
-      if (row) row.style.opacity = '1';
-      alert('Error al obtener la solicitud. Intenta de nuevo.');
-      return;
-    }
-
-    // 1. Create the time slot for this instructor
     const { data: slot, error: slotErr } = await supabaseClient
       .from('time_slots')
       .insert({
@@ -395,7 +404,7 @@ async function handleRequest(requestId, newStatus) {
         date: req.requested_date,
         start_time: req.requested_time,
         class_type: req.class_type,
-        slot_mode: req.class_type === 'Grupal' ? 'group_only' : 'private_only',
+        slot_mode: slotMode,
         is_booked: true
       })
       .select()
@@ -407,7 +416,7 @@ async function handleRequest(requestId, newStatus) {
       return;
     }
 
-    // 2. Create the booking linked to the customer
+    // 2. Create the booking
     const { error: bookingErr } = await supabaseClient
       .from('bookings')
       .insert({
@@ -415,11 +424,11 @@ async function handleRequest(requestId, newStatus) {
         customer_id: req.customer_id,
         customer_name: req.customer_name,
         customer_phone: req.customer_phone,
+        booking_mode: bookingMode,
         cancelled: false
       });
 
     if (bookingErr) {
-      // Roll back the slot if booking fails
       await supabaseClient.from('time_slots').delete().eq('id', slot.id);
       if (row) row.style.opacity = '1';
       alert('Error al crear la reserva. Intenta de nuevo.');
@@ -440,12 +449,6 @@ async function handleRequest(requestId, newStatus) {
   }
 
   // 4. Send email to student
-  const { data: profile } = await supabaseClient
-    .from('customer_profiles')
-    .select('email, full_name')
-    .eq('id', req.customer_id)
-    .single();
-
   if (profile?.email) {
     sendEmail(
       newStatus === 'confirmed' ? 'request_confirmed' : 'request_declined',
@@ -459,8 +462,20 @@ async function handleRequest(requestId, newStatus) {
     );
   }
 
+  // 5. Refresh — if confirmed, switch instructor to Próximas so they see the new slot
   await loadSlots();
   await loadRequests();
+
+  if (newStatus === 'confirmed') {
+    // Switch to Próximas tab
+    const upcomingTab = document.querySelector('.tab');
+    if (upcomingTab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      upcomingTab.classList.add('active');
+      currentTab = 'upcoming';
+      renderSlots();
+    }
+  }
 }
 
 async function loadSlots() {
