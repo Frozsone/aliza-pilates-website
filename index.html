@@ -101,43 +101,68 @@
     /* ───── HERO ───── */
     .hero {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 8rem 2rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       position: relative;
-      background: linear-gradient(160deg, var(--cream) 0%, var(--greige-light) 100%);
       overflow: hidden;
     }
 
-    .hero::before {
-      content: '';
-      position: absolute;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: rgba(200, 196, 183, 0.15);
-      top: -100px;
-      right: -150px;
+    .hero-left {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8rem 4rem 4rem;
+      background: linear-gradient(160deg, var(--cream) 0%, var(--greige-light) 100%);
+      position: relative;
+      z-index: 1;
     }
 
-    .hero::after {
+    .hero-left::after {
       content: '';
       position: absolute;
-      width: 400px;
-      height: 400px;
+      width: 350px;
+      height: 350px;
       border-radius: 50%;
-      background: rgba(200, 196, 183, 0.1);
+      background: rgba(200, 196, 183, 0.12);
       bottom: -80px;
       left: -80px;
+      pointer-events: none;
+    }
+
+    .hero-right {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-right img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    .hero-right::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(247,245,240,0.25) 0%, transparent 30%);
+      pointer-events: none;
     }
 
     .hero-content {
       position: relative;
       z-index: 1;
-      max-width: 800px;
+      max-width: 480px;
       animation: fadeUp 1.2s ease both;
+      text-align: left;
+    }
+
+    .hero-content .hero-sub,
+    .hero-content .hero-cta {
+      text-align: left;
+      margin-left: 0;
+      margin-right: 0;
     }
 
     .hero-eyebrow {
@@ -179,9 +204,7 @@
       letter-spacing: 0.05em;
       line-height: 1.8;
       margin-bottom: 3rem;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
+      max-width: 420px;
     }
 
     .hero-cta {
@@ -203,8 +226,8 @@
 
     .hero-badge {
       position: absolute;
-      right: 8%;
-      bottom: 12%;
+      right: 5%;
+      bottom: 8%;
       width: 110px;
       height: 110px;
       border-radius: 50%;
@@ -216,6 +239,104 @@
       justify-content: center;
       text-align: center;
       animation: fadeUp 1.4s 0.3s ease both;
+      z-index: 10;
+    }
+
+    /* ───── ABOUT PHOTO ───── */
+    .about-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .about-photo {
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+    }
+
+    .about-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: transform 0.6s ease;
+    }
+
+    .about-photo:hover img { transform: scale(1.03); }
+
+    /* ───── GALLERY SECTION ───── */
+    .gallery-section {
+      background: var(--charcoal-dark);
+      padding: 0;
+    }
+
+    .gallery-strip {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      height: 480px;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: transform 0.6s ease, filter 0.4s ease;
+      filter: brightness(0.88);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.04);
+      filter: brightness(0.95);
+    }
+
+    .gallery-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(58,57,53,0.7) 0%, transparent 100%);
+      color: var(--greige-light);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .gallery-item:hover .gallery-caption { opacity: 1; }
+
+    /* ───── TEAM BANNER ───── */
+    .team-banner {
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .team-banner img {
+      width: 100%;
+      aspect-ratio: 16/7;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    .team-banner-caption {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
     }
 
     .hero-badge span:first-child {
@@ -814,6 +935,14 @@
       .instagram-grid { grid-template-columns: repeat(2, 1fr); }
       .contact { grid-template-columns: 1fr; gap: 2rem; }
       .hero-badge { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-right { height: 55vw; max-height: 420px; }
+      .hero-left { padding: 7rem 1.5rem 3rem; }
+      .hero-content { max-width: 100%; }
+      .hero-content .hero-sub { max-width: 100%; }
+      .gallery-strip { grid-template-columns: 1fr; height: auto; }
+      .gallery-item { height: 260px; }
+      .team-banner { max-width: 100%; }
     }
 
     /* ───── HAMBURGER ───── */
@@ -942,22 +1071,27 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-content">
-      <p class="hero-eyebrow">
-        <span data-lang="en">Panama City, Panama</span>
-        <span data-lang="es">Ciudad de Panamá, Panamá</span>
-      </p>
-      <h1 data-lang="en">Move with <em>purpose.</em><br>Live with strength.</h1>
-      <h1 data-lang="es">Muévete con <em>propósito.</em><br>Vive con fuerza.</h1>
-      <p class="hero-sub" data-lang="en">Personalized Pilates training in the original Joseph Pilates method. Private classes with certified instructors in the heart of Paitilla.</p>
-      <p class="hero-sub" data-lang="es">Entrenamiento personalizado de Pilates en el método original de Joseph Pilates. Clases privadas con instructores certificados en el corazón de Paitilla.</p>
-      <a href="booking.html" class="hero-cta" data-lang="en">Reserve Your Class</a>
-      <a href="booking.html" class="hero-cta" data-lang="es">Reserva Tu Clase</a>
+    <div class="hero-left">
+      <div class="hero-content">
+        <p class="hero-eyebrow">
+          <span data-lang="en">Panama City, Panama</span>
+          <span data-lang="es">Ciudad de Panamá, Panamá</span>
+        </p>
+        <h1 data-lang="en">Move with <em>purpose.</em><br>Live with strength.</h1>
+        <h1 data-lang="es">Muévete con <em>propósito.</em><br>Vive con fuerza.</h1>
+        <p class="hero-sub" data-lang="en">Personalized Pilates training in the original Joseph Pilates method. Private classes with certified instructors in the heart of Paitilla.</p>
+        <p class="hero-sub" data-lang="es">Entrenamiento personalizado de Pilates en el método original de Joseph Pilates. Clases privadas con instructoras certificadas en el corazón de Paitilla.</p>
+        <a href="booking.html" class="hero-cta" data-lang="en">Reserve Your Class</a>
+        <a href="booking.html" class="hero-cta" data-lang="es">Reserva Tu Clase</a>
+      </div>
     </div>
-    <div class="hero-badge">
-      <span>25</span>
-      <span data-lang="en">Years of Excellence</span>
-      <span data-lang="es">Años de Excelencia</span>
+    <div class="hero-right">
+      <img src="studio-wide.jpg" alt="Aliza Pilates Studio — equipos Gratz originales" />
+      <div class="hero-badge">
+        <span>25</span>
+        <span data-lang="en">Years of Excellence</span>
+        <span data-lang="es">Años de Excelencia</span>
+      </div>
     </div>
   </section>
 
@@ -970,34 +1104,39 @@
       <h2 class="section-title" data-lang="es">Un sistema completo para <em>cuerpo y mente</em></h2>
       <div class="divider"></div>
       <p data-lang="en">Pilates is a physical conditioning method developed over seventy years ago by Joseph H. Pilates. Unlike other disciplines that isolate certain muscle groups, Pilates works the body as a complete system — emphasizing correct spinal alignment and controlled breathing.</p>
-      <p data-lang="es">Pilates es un método de acondicionamiento físico desarrollado hace más de setenta años por Joseph H. Pilates. A diferencia de otras disciplinas que trabajan músculos de forma aislada, Pilates trabaja el cuerpo como un sistema completo, insistiendo en la alineación corporal y la respiración controlada.</p>
+      <p data-lang="es">Pilates es un método de acondicionamiento físico desarrollado hace más de setenta años por Joseph H. Pilates. A diferencia de otras disciplinas que trabajan músculos de forma aislada, Pilates trabaja el cuerpo como un sistema completo, enfatizando la alineación correcta de la columna y la respiración controlada.</p>
       <p data-lang="en">Daily activities and sports develop certain muscle groups while leaving others behind. Pilates corrects these imbalances — eliminating the tension, fatigue, discomfort and pain they can cause.</p>
-      <p data-lang="es">Las actividades diarias y el deporte desarrollan ciertos grupos musculares dejando otros en el olvido. Pilates corrige estos desequilibrios, eliminando la tensión, la fatiga, el dolor y la incomodidad que pueden generar.</p>
+      <p data-lang="es">Las actividades cotidianas y el deporte desarrollan ciertos grupos musculares dejando otros en el olvido. Pilates corrige esos desequilibrios, eliminando la tensión, la fatiga y el dolor que generan.</p>
     </div>
-    <div class="about-pillars fade-in">
-      <div class="pillar">
-        <h4 data-lang="en">Concentration</h4>
-        <h4 data-lang="es">Concentración</h4>
-        <p data-lang="en">Every movement performed with full awareness and intention.</p>
-        <p data-lang="es">Cada movimiento realizado con plena conciencia e intención.</p>
+    <div class="about-visual fade-in">
+      <div class="about-photo">
+        <img src="studio-wide.jpg" alt="Estudio Aliza Pilates — equipos Gratz originales" />
       </div>
-      <div class="pillar">
-        <h4 data-lang="en">Control</h4>
-        <h4 data-lang="es">Control</h4>
-        <p data-lang="en">Mastery over your body so it no longer dominates you.</p>
-        <p data-lang="es">El dominio sobre tu cuerpo para que no te domine a ti.</p>
-      </div>
-      <div class="pillar">
-        <h4 data-lang="en">Precision</h4>
-        <h4 data-lang="es">Precisión</h4>
-        <p data-lang="en">Quality over quantity — each movement counts.</p>
-        <p data-lang="es">Calidad sobre cantidad — cada movimiento importa.</p>
-      </div>
-      <div class="pillar">
-        <h4 data-lang="en">Breathing</h4>
-        <h4 data-lang="es">Respiración</h4>
-        <p data-lang="en">The breath connects mind and body for a truly effective workout.</p>
-        <p data-lang="es">La respiración conecta la mente con el cuerpo para un trabajo eficaz.</p>
+      <div class="about-pillars">
+        <div class="pillar">
+          <h4 data-lang="en">Concentration</h4>
+          <h4 data-lang="es">Concentración</h4>
+          <p data-lang="en">Every movement performed with full awareness and intention.</p>
+          <p data-lang="es">Cada movimiento realizado con plena conciencia e intención.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">Control</h4>
+          <h4 data-lang="es">Control</h4>
+          <p data-lang="en">Mastery over your body so it no longer dominates you.</p>
+          <p data-lang="es">El dominio sobre tu cuerpo para que no te domine a ti.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">Precision</h4>
+          <h4 data-lang="es">Precisión</h4>
+          <p data-lang="en">Quality over quantity — each movement counts.</p>
+          <p data-lang="es">Calidad sobre cantidad — cada movimiento cuenta.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">Breathing</h4>
+          <h4 data-lang="es">Respiración</h4>
+          <p data-lang="en">The breath connects mind and body for a truly effective workout.</p>
+          <p data-lang="es">La respiración conecta la mente con el cuerpo para un trabajo verdaderamente efectivo.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -1013,7 +1152,7 @@
   <!-- FOUNDER -->
   <section class="founder" id="founder">
     <div class="founder-visual">
-      <img src="aliza-cohen.jpg" alt="Aliza Cohen Mizrachi" style="width:100%;height:100%;object-fit:cover;object-position:center top;" />
+      <img src="aliza-certificates.jpg" alt="Aliza Cohen Mizrachi — Fundadora de Aliza Pilates Studio" style="width:100%;height:100%;object-fit:cover;object-position:center top;" />
     </div>
     <div class="founder-text fade-in">
       <p class="section-label" data-lang="en">Our Founder</p>
@@ -1046,7 +1185,7 @@
       <p class="section-label" data-lang="en">What We Offer</p>
       <p class="section-label" data-lang="es">Nuestras Clases</p>
       <h2 class="section-title" data-lang="en">Classes for <em>every body</em></h2>
-      <h2 class="section-title" data-lang="es">Clases para <em>todo el mundo</em></h2>
+      <h2 class="section-title" data-lang="es">Clases para <em>todos</em></h2>
       <div class="divider"></div>
       <p class="classes-desc" data-lang="en">All our classes use authentic Gratz equipment — the original manufacturer of Joseph Pilates' apparatus. Whether you prefer a fully private session or the energy of a small group, we have the right format for you.</p>
       <p class="classes-desc" data-lang="es">Todas nuestras clases utilizan los equipos originales de Gratz — el fabricante original de los aparatos de Joseph Pilates. Ya sea que prefieras una sesión completamente privada o la energía de un grupo pequeño, tenemos el formato ideal para ti.</p>
@@ -1126,7 +1265,13 @@
       <h2 class="section-title" data-lang="es">Conoce a nuestras <em>instructoras</em></h2>
       <div class="divider"></div>
       <p class="instructors-desc" data-lang="en">All our instructors are certified in the original Joseph Pilates method and bring years of dedicated experience to every class.</p>
-      <p class="instructors-desc" data-lang="es">Todas nuestras instructoras están certificadas en el método original de Joseph Pilates y aportan años de experiencia dedicada a cada clase.</p>
+      <p class="instructors-desc" data-lang="es">Todas nuestras instructoras están certificadas en el método original de Joseph Pilates y aportan años de experiencia a cada clase.</p>
+    </div>
+
+    <div class="team-banner fade-in">
+      <img src="team-photo.jpg" alt="El equipo de Aliza Pilates Studio" />
+      <p class="team-banner-caption" data-lang="es">El equipo de Aliza Pilates Studio</p>
+      <p class="team-banner-caption" data-lang="en">The Aliza Pilates Studio team</p>
     </div>
     <div class="instructors-grid fade-in">
 
@@ -1198,6 +1343,27 @@
     </div>
   </section>
 
+  <!-- GALLERY -->
+  <section class="gallery-section">
+    <div class="gallery-strip">
+      <div class="gallery-item">
+        <img src="class-action-3.jpg" alt="Clase de Pilates en Aliza Pilates Studio" />
+        <div class="gallery-caption" data-lang="es">Clase grupal en acción</div>
+        <div class="gallery-caption" data-lang="en">Group class in action</div>
+      </div>
+      <div class="gallery-item">
+        <img src="class-action-1.jpg" alt="Instructoras en Aliza Pilates Studio" />
+        <div class="gallery-caption" data-lang="es">Nuestras instructoras certificadas</div>
+        <div class="gallery-caption" data-lang="en">Our certified instructors</div>
+      </div>
+      <div class="gallery-item">
+        <img src="studio-reformers.jpg" alt="Reformers Gratz originales" />
+        <div class="gallery-caption" data-lang="es">Equipos Gratz originales</div>
+        <div class="gallery-caption" data-lang="en">Original Gratz equipment</div>
+      </div>
+    </div>
+  </section>
+
   <!-- BOOKING CTA -->
   <section class="booking-cta" id="booking">
     <p class="section-label" data-lang="en">Reserve Your Spot</p>
@@ -1205,7 +1371,7 @@
     <h2 data-lang="en">Ready to begin your <em>Pilates journey?</em></h2>
     <h2 data-lang="es">¿Lista para comenzar tu <em>camino en Pilates?</em></h2>
     <p data-lang="en">Classes are private and personalized. Book directly with any of our certified instructors.</p>
-    <p data-lang="es">Las clases son privadas y personalizadas. Reserva directamente con cualquiera de nuestros instructores certificados.</p>
+    <p data-lang="es">Las clases son privadas y personalizadas. Reserva directamente con cualquiera de nuestras instructoras certificadas.</p>
     <a href="booking.html" class="btn-primary" data-lang="en">Book a Class</a>
     <a href="booking.html" class="btn-primary" data-lang="es">Reservar Clase</a>
     <a href="#contact" class="btn-outline" data-lang="en">Contact Us</a>
@@ -1249,7 +1415,7 @@
         <a href="tel:2151883">Tel: 215-1883</a><br>
         <a href="https://instagram.com/alizapilatesstudio" target="_blank">@alizapilatesstudio</a><br>
         <span data-lang="en">By appointment only</span>
-        <span data-lang="es">Previa cita</span>
+        <span data-lang="es">Solo con cita previa</span>
       </p>
     </div>
     <div class="contact-block">
