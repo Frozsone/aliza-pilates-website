@@ -123,11 +123,87 @@
     [data-auth="loggedin"] { display: none; }
 
     @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      .dash-header { padding: 2rem 1.5rem; }
-      .dash-tabs { padding: 0 1rem; overflow-x: auto; }
-      .dash-content { padding: 2rem 1rem; }
-      .booking-row { flex-direction: column; align-items: flex-start; }
+      nav { padding: 1rem 1.2rem; }
+      .dash-header { padding: 2rem 1.2rem; }
+      .dash-tabs { padding: 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; scrollbar-width: none; }
+      .dash-tabs::-webkit-scrollbar { display: none; }
+      .dash-tab { flex-shrink: 0; padding: 1rem 1.1rem; font-size: 0.7rem; }
+      .dash-content { padding: 1.5rem 1rem; }
+      .booking-row { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+    }
+
+    /* ── PHONE-SPECIFIC ── */
+    @media (max-width: 480px) {
+      /* Nav */
+      nav { padding: 0.9rem 1rem; }
+      .nav-logo { font-size: 1.05rem; }
+      .nav-right { gap: 0.8rem; }
+      .nav-link { font-size: 0.68rem; letter-spacing: 0.1em; }
+      .btn-logout { font-size: 0.65rem; padding: 0.3rem 0.7rem; }
+
+      /* Auth box */
+      .auth-box { padding: 2rem 1.2rem; }
+      .auth-box h2 { font-size: 1.7rem; margin-bottom: 1.5rem; }
+      .form-group input, .form-group select, .form-group textarea {
+        font-size: 1rem;
+        padding: 0.85rem 0.9rem;
+        min-height: 48px;
+      }
+      .btn-primary, .btn-secondary { min-height: 52px; font-size: 0.78rem; }
+      .phone-row select { width: 100px; font-size: 0.78rem; }
+
+      /* Dashboard header */
+      .dash-header { padding: 1.8rem 1.2rem; }
+      .dash-header h1 { font-size: 2rem; }
+
+      /* Tabs — horizontal scroll, equal padding */
+      .dash-tabs { display: flex; }
+      .dash-tab { padding: 0.9rem 1rem; font-size: 0.68rem; letter-spacing: 0.08em; }
+
+      /* Content */
+      .dash-content { padding: 1.2rem 1rem; }
+
+      /* Booking rows */
+      .booking-row { padding: 1.1rem; gap: 0.7rem; }
+      .booking-row-time { font-size: 1.2rem; }
+      .booking-row-date { font-size: 0.65rem; }
+      .booking-row-details { font-size: 0.75rem; }
+      .booking-row > div:last-child { display: flex; align-items: center; gap: 0.8rem; width: 100%; }
+      .btn-cancel-booking { 
+        padding: 0.55rem 1rem; 
+        min-height: 40px; 
+        font-size: 0.68rem;
+        flex: 1;
+        text-align: center;
+      }
+      .status-badge { font-size: 0.62rem; padding: 0.3rem 0.6rem; }
+
+      /* Request form */
+      .request-form-wrap h3 { font-size: 1.4rem; }
+      .request-form-wrap .desc { font-size: 0.82rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; }
+
+      /* Cancel modal — bottom sheet */
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: 100%;
+        width: 100%;
+        padding: 1.8rem 1.2rem 2.5rem;
+        border-radius: 16px 16px 0 0;
+        max-height: 85vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+      .modal-close { 
+        top: 1.2rem; right: 1.2rem; 
+        font-size: 1.6rem; 
+        min-width: 44px; min-height: 44px; 
+        display: flex; align-items: center; justify-content: center; 
+      }
+      .btn-primary, .btn-secondary { min-height: 52px; }
+
+      /* Profile section spacing */
+      #tab-profile .request-form-wrap { padding-bottom: 3rem; }
     }
   </style>
 </head>

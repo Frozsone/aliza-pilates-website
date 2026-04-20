@@ -153,10 +153,67 @@
     .lang-toggle:hover { background: var(--greige-light); }
 
     @media (max-width: 768px) {
-      .booking-layout { grid-template-columns: 1fr; }
-      .filters-panel { position: static; }
-      nav { padding: 1rem 1.5rem; }
-      .slots-grid { grid-template-columns: repeat(2, 1fr); }
+      .booking-layout { grid-template-columns: 1fr; gap: 0; padding: 0; }
+      .filters-panel { position: static; border: none; border-bottom: 1px solid var(--greige-light); border-radius: 0; padding: 0; }
+      nav { padding: 1rem 1.2rem; }
+      .slots-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+      .page-header { padding: 2rem 1.2rem; }
+    }
+
+    /* ── PHONE-SPECIFIC ── */
+    @media (max-width: 480px) {
+      nav { padding: 0.9rem 1rem; }
+      .nav-logo { font-size: 1.1rem; }
+      .nav-back { font-size: 0.7rem; letter-spacing: 0.1em; }
+
+      .page-header { padding: 1.8rem 1.2rem; }
+      .page-header p { font-size: 0.68rem; margin-bottom: 0.5rem; }
+      .page-header h1 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
+
+      /* Filters: collapsible accordion */
+      .filters-panel { background: var(--white); }
+      .filters-toggle {
+        width: 100%; padding: 1rem 1.2rem;
+        display: flex; align-items: center; justify-content: space-between;
+        background: var(--white); border: none; cursor: pointer;
+        font-family: 'Jost', sans-serif; font-size: 0.72rem;
+        letter-spacing: 0.2em; text-transform: uppercase; color: var(--charcoal-dark);
+      }
+      .filters-toggle-arrow { font-size: 0.9rem; transition: transform 0.2s; }
+      .filters-toggle-arrow.open { transform: rotate(180deg); }
+      .filters-body { display: none; padding: 0 1.2rem 1.2rem; }
+      .filters-body.open { display: block; }
+      .filter-title { display: none; }
+
+      /* Slots */
+      .booking-layout { padding: 1rem; gap: 1.5rem; }
+      .slots-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+      .slot-card { padding: 1rem 0.85rem; }
+      .slot-time { font-size: 1.2rem; }
+      .slot-date { font-size: 0.65rem; }
+      .slot-type { font-size: 0.65rem; }
+      .slot-mode-badge { font-size: 0.6rem; padding: 0.2rem 0.4rem; }
+
+      .instructor-group-header h3 { font-size: 1.1rem; }
+      .instructor-group { margin-bottom: 2rem; }
+
+      .no-slots { padding: 2.5rem 1rem; }
+
+      /* Modal: full-screen bottom sheet on mobile */
+      .modal-overlay { align-items: flex-end; padding: 0; }
+      .modal {
+        max-width: 100%;
+        width: 100%;
+        padding: 1.8rem 1.2rem 2.5rem;
+        border-radius: 16px 16px 0 0;
+        max-height: 92vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .modal h2 { font-size: 1.5rem; }
+      .form-group input { font-size: 1rem; padding: 0.9rem 1rem; }
+      .btn-confirm { padding: 1rem; font-size: 0.78rem; min-height: 52px; }
+      .modal-close { top: 1.2rem; right: 1.2rem; font-size: 1.6rem; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
     }
   </style>
 </head>
@@ -182,6 +239,12 @@
 
 <div class="booking-layout">
   <div class="filters-panel">
+    <button class="filters-toggle" id="filters-toggle" onclick="toggleFilters()">
+      <span data-lang="es">Filtrar clases</span>
+      <span data-lang="en">Filter classes</span>
+      <span class="filters-toggle-arrow" id="filters-arrow">▼</span>
+    </button>
+    <div class="filters-body" id="filters-body">
     <p class="filter-title" data-lang="es">Filtrar clases</p>
     <p class="filter-title" data-lang="en">Filter classes</p>
     <div class="filter-group">
@@ -196,7 +259,8 @@
         <option value="">— Todas las instructoras —</option>
       </select>
     </div>
-  </div>
+    </div><!-- end filters-body -->
+  </div><!-- end filters-panel -->
 
   <div class="slots-panel">
     <div id="slots-container"><div class="loading">Cargando clases disponibles...</div></div>
@@ -231,6 +295,22 @@ let allInstructors = [];
 let selectedSlot = null;
 let selectedBookingMode = 'private'; // 'private' or 'group'
 const isEs = () => document.body.classList.contains('es');
+
+function toggleFilters() {
+  const body = document.getElementById('filters-body');
+  const arrow = document.getElementById('filters-arrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
+// On desktop, always show filters body
+function initFilters() {
+  if (window.innerWidth > 480) {
+    document.getElementById('filters-body').classList.add('open');
+  }
+}
+initFilters();
+window.addEventListener('resize', initFilters);
 
 function toggleLang(btn) {
   document.body.classList.toggle('es');
