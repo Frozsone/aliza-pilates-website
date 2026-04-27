@@ -148,6 +148,88 @@
     }
     .btn-decline:hover { background: var(--error); color: white; }
 
+    /* GOOGLE CALENDAR SECTION */
+    .gcal-section {
+      background: var(--white);
+      border: 1px solid var(--greige-light);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .gcal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; padding-bottom: 1.2rem;
+      border-bottom: 1px solid var(--greige-light);
+    }
+    .gcal-header h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 400; color: var(--charcoal-dark);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .gcal-status {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+    }
+    .gcal-status.connected {
+      background: #f0f7f2; color: var(--success); border: 1px solid #a8d5b5;
+    }
+    .gcal-status.disconnected {
+      background: var(--greige-light); color: var(--charcoal-dark); border: 1px solid var(--greige);
+    }
+    .gcal-body { display: flex; flex-direction: column; gap: 1rem; }
+    .gcal-info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.82rem; color: var(--charcoal);
+    }
+    .gcal-info-row span:first-child {
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--greige-dark);
+    }
+    .btn-gcal-connect {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.75rem 1.2rem; background: var(--white);
+      border: 1px solid var(--greige-dark); cursor: pointer;
+      font-family: 'Jost', sans-serif; font-size: 0.75rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--charcoal-dark); transition: all 0.2s; width: 100%;
+      justify-content: center; margin-top: 0.5rem;
+    }
+    .btn-gcal-connect:hover { background: var(--greige-light); }
+    .btn-gcal-connect svg { flex-shrink: 0; }
+    .btn-gcal-sync {
+      padding: 0.6rem 1.2rem; background: var(--charcoal-dark); color: var(--white);
+      border: none; font-family: 'Jost', sans-serif; font-size: 0.72rem;
+      letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-gcal-sync:hover { background: var(--text-dark); }
+    .btn-gcal-sync:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-gcal-disconnect {
+      background: none; border: none; font-family: 'Jost', sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--greige-dark); cursor: pointer; padding: 0;
+      text-decoration: underline;
+    }
+    .btn-gcal-disconnect:hover { color: var(--error); }
+    .gcal-cheatsheet {
+      background: var(--cream); padding: 1.2rem; border-left: 3px solid var(--greige);
+      margin-top: 0.5rem;
+    }
+    .gcal-cheatsheet p {
+      font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--greige-dark); margin-bottom: 0.8rem;
+    }
+    .gcal-cheatsheet ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .gcal-cheatsheet li { font-size: 0.82rem; color: var(--charcoal-dark); }
+    .gcal-cheatsheet code {
+      background: var(--white); border: 1px solid var(--greige);
+      padding: 0.15rem 0.5rem; font-family: monospace; font-size: 0.85rem;
+      color: var(--charcoal-dark);
+    }
+    .gcal-alert {
+      padding: 0.7rem 1rem; font-size: 0.8rem; line-height: 1.6; margin-top: 0.5rem;
+    }
+    .gcal-alert.success { background: #f0f7f2; border-left: 3px solid var(--success); color: var(--success); }
+    .gcal-alert.error   { background: #fdf0f0; border-left: 3px solid var(--error);   color: var(--error);   }
+
     @media (max-width: 800px) {
       .dash-layout { grid-template-columns: 1fr; }
       .add-panel { position: static; }
@@ -198,6 +280,61 @@
     </div>
 
     <div class="add-panel">
+      <!-- ── GOOGLE CALENDAR ─────────────────────── -->
+      <div class="gcal-section" id="gcal-section">
+        <div class="gcal-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="17" rx="2" stroke="#5C5A55" stroke-width="1.5"/>
+              <path d="M3 9h18" stroke="#5C5A55" stroke-width="1.5"/>
+              <path d="M8 2v4M16 2v4" stroke="#5C5A55" stroke-width="1.5" stroke-linecap="round"/>
+              <rect x="7" y="13" width="3" height="3" rx="0.5" fill="#4285F4"/>
+              <rect x="11" y="13" width="3" height="3" rx="0.5" fill="#4285F4"/>
+            </svg>
+            Google Calendar
+          </h3>
+          <span class="gcal-status disconnected" id="gcal-status-badge">No conectado</span>
+        </div>
+        <div class="gcal-body" id="gcal-body">
+          <div id="gcal-disconnected-view">
+            <p style="font-size:0.84rem;color:var(--charcoal);line-height:1.7;margin-bottom:1rem;">
+              Conecta tu Google Calendar para añadir clases directamente desde tu teléfono o computadora. Solo los eventos que contengan <strong>"Pilates"</strong> en el título serán sincronizados.
+            </p>
+            <button class="btn-gcal-connect" id="btn-connect" onclick="connectGoogleCalendar()">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Conectar Google Calendar
+            </button>
+          </div>
+
+          <div id="gcal-connected-view" style="display:none;">
+            <div class="gcal-info-row">
+              <span>Cuenta conectada</span>
+              <span id="gcal-email">—</span>
+            </div>
+            <div class="gcal-info-row">
+              <span>Última sincronización</span>
+              <span id="gcal-last-sync">Nunca</span>
+            </div>
+            <div id="gcal-alert"></div>
+            <div style="display:flex;gap:0.8rem;align-items:center;margin-top:0.5rem;">
+              <button class="btn-gcal-sync" id="btn-sync" onclick="syncCalendar()">↻ Sincronizar ahora</button>
+              <button class="btn-gcal-disconnect" onclick="disconnectGoogleCalendar()">Desconectar</button>
+            </div>
+          </div>
+
+          <!-- Cheat sheet — always visible once connected -->
+          <div class="gcal-cheatsheet" id="gcal-cheatsheet" style="display:none;">
+            <p>📅 Cómo nombrar tus eventos</p>
+            <ul>
+              <li><code>Pilates Privada</code> → solo clase privada</li>
+              <li><code>Pilates Grupal</code> → solo clase grupal (máx. 4)</li>
+              <li><code>Pilates</code> → alumna elige privada o grupal</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ADD SLOT PANEL ──────────────────────── -->
       <div class="add-panel-inner">
         <h3>Añadir clase disponible</h3>
         <div class="form-group">
@@ -221,8 +358,8 @@
         <div id="add-error"></div>
         <button class="btn-add" onclick="addSlot()">+ AÑADIR CLASE</button>
         <div class="success-toast" id="add-toast">✓ Clase añadida correctamente</div>
-      </div>
-    </div>
+      </div><!-- end add-panel-inner -->
+    </div><!-- end add-panel -->
   </div>
 </div>
 
@@ -310,6 +447,7 @@ async function loadDashboard() {
   document.getElementById('new-date').min = today;
   populateTimeOptions();
   await loadSlots();
+  await checkGoogleConnection();
 }
 
 async function loadRequests() {
@@ -654,6 +792,178 @@ async function logout() {
   document.getElementById('login-password').value = '';
   currentUser = null; currentInstructor = null;
 }
+
+// ── GOOGLE CALENDAR INTEGRATION ──────────────────────────────
+
+// IMPORTANT: Replace with your actual Google Client ID from Google Cloud Console
+const GOOGLE_CLIENT_ID = '698356588720-1ga19s92k8a2kotc8gfe0dg7mo5bln84.apps.googleusercontent.com';
+const GCAL_SCOPE       = 'https://www.googleapis.com/auth/calendar.readonly';
+const REDIRECT_URI     = window.location.origin + '/instructor.html';
+
+async function checkGoogleConnection() {
+  if (!currentUser) return;
+  const { data, error } = await supabaseClient
+    .from('instructor_google_tokens')
+    .select('last_synced_at')
+    .eq('instructor_id', currentUser.id)
+    .single();
+
+  if (data && !error) {
+    showGcalConnected(data.last_synced_at);
+    // Auto-sync on login
+    syncCalendar(true);
+  } else {
+    showGcalDisconnected();
+  }
+}
+
+function showGcalConnected(lastSynced) {
+  document.getElementById('gcal-status-badge').textContent = '✓ Conectado';
+  document.getElementById('gcal-status-badge').className = 'gcal-status connected';
+  document.getElementById('gcal-disconnected-view').style.display = 'none';
+  document.getElementById('gcal-connected-view').style.display = 'block';
+  document.getElementById('gcal-cheatsheet').style.display = 'block';
+  // Show the instructor's email as the connected account
+  document.getElementById('gcal-email').textContent = currentUser.email;
+  if (lastSynced) {
+    const d = new Date(lastSynced);
+    document.getElementById('gcal-last-sync').textContent =
+      d.toLocaleDateString('es-PA', { day: 'numeric', month: 'short' }) + ' ' +
+      d.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+  }
+}
+
+function showGcalDisconnected() {
+  document.getElementById('gcal-status-badge').textContent = 'No conectado';
+  document.getElementById('gcal-status-badge').className = 'gcal-status disconnected';
+  document.getElementById('gcal-disconnected-view').style.display = 'block';
+  document.getElementById('gcal-connected-view').style.display = 'none';
+  document.getElementById('gcal-cheatsheet').style.display = 'none';
+}
+
+function connectGoogleCalendar() {
+  // Generate a random state value for CSRF protection
+  const state = Math.random().toString(36).substring(2);
+  sessionStorage.setItem('gcal_oauth_state', state);
+
+  const params = new URLSearchParams({
+    client_id:     GOOGLE_CLIENT_ID,
+    redirect_uri:  REDIRECT_URI,
+    response_type: 'code',
+    scope:         GCAL_SCOPE,
+    access_type:   'offline',
+    prompt:        'consent',
+    state,
+  });
+
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+}
+
+async function handleOAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code   = params.get('code');
+  const state  = params.get('state');
+
+  if (!code) return; // Not a callback — normal page load
+
+  // Verify state to prevent CSRF
+  const savedState = sessionStorage.getItem('gcal_oauth_state');
+  if (state !== savedState) {
+    console.error('OAuth state mismatch');
+    return;
+  }
+  sessionStorage.removeItem('gcal_oauth_state');
+
+  // Clean the URL
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  // Wait for Supabase session to load
+  const { data: sessionData } = await supabaseClient.auth.getSession();
+  if (!sessionData?.session) {
+    // Not logged in — redirect to login
+    return;
+  }
+
+  // Exchange the code for tokens via our Edge Function
+  const btn = document.getElementById('btn-connect');
+  if (btn) { btn.disabled = true; btn.textContent = 'Conectando...'; }
+
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/google-calendar-auth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+    body: JSON.stringify({
+      code,
+      instructor_id: sessionData.session.user.id,
+      redirect_uri:  REDIRECT_URI,
+    }),
+  });
+
+  const result = await res.json();
+
+  if (result.success) {
+    showGcalConnected(null);
+    syncCalendar(true);
+  } else {
+    console.error('OAuth exchange error:', result.error);
+    showGcalDisconnected();
+    alert('Error al conectar Google Calendar. Por favor intenta de nuevo.');
+  }
+}
+
+async function syncCalendar(silent = false) {
+  if (!currentUser) return;
+
+  const btn       = document.getElementById('btn-sync');
+  const alertEl   = document.getElementById('gcal-alert');
+  if (btn) { btn.disabled = true; btn.textContent = '↻ Sincronizando...'; }
+
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/sync-google-calendar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+    body: JSON.stringify({ instructor_id: currentUser.id }),
+  });
+
+  const result = await res.json();
+
+  if (btn) { btn.disabled = false; btn.textContent = '↻ Sincronizar ahora'; }
+
+  if (result.success) {
+    // Update last sync time
+    const now = new Date();
+    document.getElementById('gcal-last-sync').textContent =
+      now.toLocaleDateString('es-PA', { day: 'numeric', month: 'short' }) + ' ' +
+      now.toLocaleTimeString('es-PA', { hour: '2-digit', minute: '2-digit' });
+
+    if (!silent) {
+      const msg = result.added > 0 || result.removed > 0
+        ? `✓ Sincronizado — ${result.added} clase${result.added !== 1 ? 's' : ''} añadida${result.added !== 1 ? 's' : ''}${result.removed > 0 ? ', ' + result.removed + ' eliminada' + (result.removed !== 1 ? 's' : '') : ''}.`
+        : '✓ Todo al día — no hay cambios nuevos.';
+      alertEl.innerHTML = `<div class="gcal-alert success">${msg}</div>`;
+      setTimeout(() => alertEl.innerHTML = '', 4000);
+    }
+
+    // Refresh the slots list
+    await loadSlots();
+  } else {
+    if (!silent) {
+      alertEl.innerHTML = `<div class="gcal-alert error">Error al sincronizar: ${result.error}</div>`;
+    }
+    console.error('Sync error:', result.error);
+  }
+}
+
+async function disconnectGoogleCalendar() {
+  if (!confirm('¿Estás segura de que quieres desconectar Google Calendar? Los horarios ya añadidos no se eliminarán.')) return;
+  await supabaseClient
+    .from('instructor_google_tokens')
+    .delete()
+    .eq('instructor_id', currentUser.id);
+  showGcalDisconnected();
+}
+
+// ── Check for OAuth callback on every page load ───────────────
+// (must run before the session check so the code is captured)
+handleOAuthCallback();
 
 // Check if already logged in
 supabaseClient.auth.getSession().then(({ data }) => {
