@@ -391,6 +391,7 @@ let currentUser = null;
 let currentInstructor = null;
 let mySlots = [];
 let currentTab = 'upcoming';
+let gcalConnected = false; // tracks whether Google Calendar is connected
 
 function populateTimeOptions() {
   const sel = document.getElementById('new-time');
@@ -619,7 +620,7 @@ async function handleRequest(requestId, newStatus) {
 async function loadSlots() {
   const { data } = await supabaseClient
     .from('time_slots')
-    .select('*, bookings(id, cancelled, booking_mode, customer_name, customer_phone)')
+    .select('*, google_event_id, bookings(id, cancelled, booking_mode, customer_name, customer_phone)')
     .eq('instructor_id', currentUser.id)
     .order('date').order('start_time');
 
@@ -753,17 +754,49 @@ async function addSlot() {
   }
 
   errEl.innerHTML = '';
-  const { error } = await supabaseClient.from('time_slots').insert({
+
+  // Insert the slot and get back its ID
+  const { data: newSlot, error } = await supabaseClient.from('time_slots').insert({
     instructor_id: currentUser.id,
     date,
     start_time: time,
     class_type: mode === 'group_only' ? 'Grupal' : 'Privada',
     slot_mode: mode
-  });
+  }).select().single();
 
   if (error) {
     errEl.innerHTML = '<p class="error-msg">Error al añadir. Intenta de nuevo.</p>';
     return;
+  }
+
+  // If Google Calendar is connected, create the event there too
+  // This runs in the background — if it fails, the slot is still saved
+  if (gcalConnected && newSlot?.id) {
+    try {
+      const gcalRes = await fetch(`${SUPABASE_URL}/functions/v1/manage-google-calendar-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+        body: JSON.stringify({
+          action: 'create',
+          instructor_id: currentUser.id,
+          date,
+          time,
+          slot_mode: mode,
+        }),
+      });
+      const gcalResult = await gcalRes.json();
+
+      // If we got a Google event ID back, save it on the slot
+      if (gcalResult.google_event_id) {
+        await supabaseClient
+          .from('time_slots')
+          .update({ google_event_id: gcalResult.google_event_id, google_synced_at: new Date().toISOString() })
+          .eq('id', newSlot.id);
+      }
+    } catch (e) {
+      // Google Calendar failed — not critical, slot is already saved
+      console.warn('Google Calendar event creation failed (non-critical):', e);
+    }
   }
 
   document.getElementById('new-date').value = '';
@@ -780,6 +813,25 @@ async function deleteSlot(slotId) {
     ? '¿Estás segura de que quieres cancelar esta clase? Ya tiene una reserva.'
     : '¿Estás segura de que quieres eliminar este horario?';
   if (!confirm(msg)) return;
+
+  // If this slot has a Google Calendar event, delete it there too
+  // Runs silently — even if it fails, the slot is still deleted from the website
+  if (gcalConnected && slot?.google_event_id) {
+    try {
+      await fetch(`${SUPABASE_URL}/functions/v1/manage-google-calendar-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+        body: JSON.stringify({
+          action: 'delete',
+          instructor_id: currentUser.id,
+          google_event_id: slot.google_event_id,
+        }),
+      });
+    } catch (e) {
+      console.warn('Google Calendar event deletion failed (non-critical):', e);
+    }
+  }
+
   await supabaseClient.from('time_slots').delete().eq('id', slotId);
   await loadSlots();
 }
@@ -797,7 +849,7 @@ async function logout() {
 
 // IMPORTANT: Replace with your actual Google Client ID from Google Cloud Console
 const GOOGLE_CLIENT_ID = '698356588720-1ga19s92k8a2kotc8gfe0dg7mo5bln84.apps.googleusercontent.com';
-const GCAL_SCOPE       = 'https://www.googleapis.com/auth/calendar.readonly';
+const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
 const REDIRECT_URI     = window.location.origin + '/instructor.html';
 
 async function checkGoogleConnection() {
@@ -818,6 +870,7 @@ async function checkGoogleConnection() {
 }
 
 function showGcalConnected(lastSynced) {
+  gcalConnected = true;
   document.getElementById('gcal-status-badge').textContent = '✓ Conectado';
   document.getElementById('gcal-status-badge').className = 'gcal-status connected';
   document.getElementById('gcal-disconnected-view').style.display = 'none';
@@ -834,6 +887,7 @@ function showGcalConnected(lastSynced) {
 }
 
 function showGcalDisconnected() {
+  gcalConnected = false;
   document.getElementById('gcal-status-badge').textContent = 'No conectado';
   document.getElementById('gcal-status-badge').className = 'gcal-status disconnected';
   document.getElementById('gcal-disconnected-view').style.display = 'block';
