@@ -449,6 +449,9 @@ async function loadDashboard() {
   populateTimeOptions();
   await loadSlots();
   await checkGoogleConnection();
+
+  // Handle Google OAuth callback AFTER we are confirmed logged in
+  await handlePendingOAuthCallback();
 }
 
 async function loadRequests() {
@@ -913,52 +916,74 @@ function connectGoogleCalendar() {
   window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
 }
 
-async function handleOAuthCallback() {
+// ── STEP 1: Capture OAuth code immediately on page load ──────
+// We do this BEFORE anything else so the code isn't lost.
+// We just save it to sessionStorage and clean the URL.
+function captureOAuthCode() {
   const params = new URLSearchParams(window.location.search);
-  const code   = params.get('code');
-  const state  = params.get('state');
+  const code  = params.get('code');
+  const state = params.get('state');
+  const error = params.get('error');
 
-  if (!code) return; // Not a callback — normal page load
+  if (error) {
+    // User denied access or something went wrong on Google's side
+    console.warn('Google OAuth error:', error);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return;
+  }
 
-  // Verify state to prevent CSRF
+  if (!code) return; // Normal page load, nothing to do
+
+  // Verify state to prevent CSRF attacks
   const savedState = sessionStorage.getItem('gcal_oauth_state');
   if (state !== savedState) {
-    console.error('OAuth state mismatch');
+    console.error('OAuth state mismatch — possible CSRF attack, ignoring');
+    window.history.replaceState({}, document.title, window.location.pathname);
     return;
   }
+
+  // Save the code for processing after login is confirmed
+  sessionStorage.setItem('pending_gcal_code', code);
   sessionStorage.removeItem('gcal_oauth_state');
 
-  // Clean the URL
+  // Clean the URL immediately so it looks normal
   window.history.replaceState({}, document.title, window.location.pathname);
+}
 
-  // Wait for Supabase session to load
-  const { data: sessionData } = await supabaseClient.auth.getSession();
-  if (!sessionData?.session) {
-    // Not logged in — redirect to login
-    return;
-  }
+// ── STEP 2: Exchange the code AFTER we know the user is logged in ─
+// Called from loadDashboard() which only runs when auth is confirmed.
+async function handlePendingOAuthCallback() {
+  const code = sessionStorage.getItem('pending_gcal_code');
+  if (!code) return; // Nothing pending
 
-  // Exchange the code for tokens via our Edge Function
+  sessionStorage.removeItem('pending_gcal_code');
+
   const btn = document.getElementById('btn-connect');
   if (btn) { btn.disabled = true; btn.textContent = 'Conectando...'; }
 
-  const res = await fetch(`${SUPABASE_URL}/functions/v1/google-calendar-auth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
-    body: JSON.stringify({
-      code,
-      instructor_id: sessionData.session.user.id,
-      redirect_uri:  REDIRECT_URI,
-    }),
-  });
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/google-calendar-auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({
+        code,
+        instructor_id: currentUser.id,
+        redirect_uri:  REDIRECT_URI,
+      }),
+    });
 
-  const result = await res.json();
+    const result = await res.json();
 
-  if (result.success) {
-    showGcalConnected(null);
-    syncCalendar(true);
-  } else {
-    console.error('OAuth exchange error:', result.error);
+    if (result.success) {
+      showGcalConnected(null);
+      await syncCalendar(true);
+    } else {
+      console.error('OAuth exchange error:', result.error);
+      showGcalDisconnected();
+      alert('Error al conectar Google Calendar: ' + (result.error || 'intenta de nuevo'));
+    }
+  } catch (e) {
+    console.error('OAuth callback exception:', e);
     showGcalDisconnected();
     alert('Error al conectar Google Calendar. Por favor intenta de nuevo.');
   }
@@ -1015,11 +1040,10 @@ async function disconnectGoogleCalendar() {
   showGcalDisconnected();
 }
 
-// ── Check for OAuth callback on every page load ───────────────
-// (must run before the session check so the code is captured)
-handleOAuthCallback();
+// Capture any OAuth code IMMEDIATELY before anything else runs
+captureOAuthCode();
 
-// Check if already logged in
+// Then check if already logged in and load the dashboard
 supabaseClient.auth.getSession().then(({ data }) => {
   if (data.session) {
     currentUser = data.session.user;
