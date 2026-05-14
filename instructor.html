@@ -108,6 +108,23 @@
       letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
     }
     .btn-add:hover { background: var(--text-dark); }
+
+    /* BOOK FOR CLIENT */
+    .book-client-panel {
+      background: var(--white); border: 1px solid var(--greige-light); padding: 2rem; margin-top: 1.5rem;
+    }
+    .book-client-panel h3 {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 400;
+      color: var(--charcoal-dark); margin-bottom: 1.5rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--greige-light);
+    }
+    .btn-book-client {
+      width: 100%; padding: 0.9rem; background: var(--success); color: var(--white);
+      border: none; font-family: 'Jost', sans-serif; font-size: 0.78rem;
+      letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; margin-top: 0.5rem;
+    }
+    .btn-book-client:hover { background: #3a6347; }
+    .btn-book-client:disabled { opacity: 0.5; cursor: not-allowed; }
     .success-toast {
       background: var(--success); color: white; padding: 0.8rem 1rem;
       font-size: 0.8rem; margin-top: 0.8rem; text-align: center; display: none;
@@ -359,6 +376,39 @@
         <button class="btn-add" onclick="addSlot()">+ AÑADIR CLASE</button>
         <div class="success-toast" id="add-toast">✓ Clase añadida correctamente</div>
       </div><!-- end add-panel-inner -->
+
+      <!-- ── RESERVAR PARA CLIENTE ──────────────────── -->
+      <div class="book-client-panel">
+        <h3>Reservar para cliente</h3>
+        <div class="form-group">
+          <label>Clase disponible</label>
+          <select id="bc-slot">
+            <option value="">— Cargando clases... —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nombre del cliente</label>
+          <input type="text" id="bc-name" placeholder="Nombre completo" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="bc-phone" placeholder="+507 ..." />
+        </div>
+        <div class="form-group">
+          <label>Correo electrónico (para confirmación)</label>
+          <input type="email" id="bc-email" placeholder="cliente@correo.com" />
+        </div>
+        <div class="form-group">
+          <label>Modalidad</label>
+          <select id="bc-mode">
+            <option value="private">Privada</option>
+            <option value="group">Grupal</option>
+          </select>
+        </div>
+        <div id="bc-error"></div>
+        <button class="btn-book-client" onclick="bookForClient()" id="bc-btn">✓ CONFIRMAR RESERVA</button>
+        <div class="success-toast" id="bc-toast">✓ Reserva creada y calendario actualizado</div>
+      </div><!-- end book-client-panel -->
     </div><!-- end add-panel -->
   </div>
 </div>
@@ -629,6 +679,125 @@ async function loadSlots() {
 
   mySlots = data || [];
   renderSlots();
+  populateClientSlotDropdown();
+}
+
+function populateClientSlotDropdown() {
+  const today = new Date().toISOString().split('T')[0];
+  const sel = document.getElementById('bc-slot');
+  if (!sel) return;
+  const available = mySlots.filter(s => {
+    if (s.date < today) return false;
+    const activeBookings = (s.bookings || []).filter(b => !b.cancelled);
+    const groupCount = activeBookings.filter(b => b.booking_mode === 'group').length;
+    if (s.is_booked && s.slot_mode !== 'group_only') return false;
+    if (s.slot_mode === 'group_only' && groupCount >= 4) return false;
+    return true;
+  });
+  if (available.length === 0) {
+    sel.innerHTML = '<option value="">— No hay clases disponibles —</option>';
+  } else {
+    sel.innerHTML = '<option value="">— Selecciona una clase —</option>' +
+      available.map(s => {
+        const modeLabel = s.slot_mode === 'group_only' ? 'Grupal' : s.slot_mode === 'private_only' ? 'Privada' : 'Privada/Grupal';
+        return `<option value="${s.id}" data-date="${s.date}" data-time="${s.start_time}" data-mode="${s.slot_mode}" data-geid="${s.google_event_id || ''}">${formatDate(s.date)} · ${formatTime(s.start_time)} — ${modeLabel}</option>`;
+      }).join('');
+  }
+}
+
+async function bookForClient() {
+  const slotId = document.getElementById('bc-slot').value;
+  const name   = document.getElementById('bc-name').value.trim();
+  const phone  = document.getElementById('bc-phone').value.trim();
+  const email  = document.getElementById('bc-email').value.trim();
+  const mode   = document.getElementById('bc-mode').value;
+  const errEl  = document.getElementById('bc-error');
+  const btn    = document.getElementById('bc-btn');
+
+  errEl.innerHTML = '';
+  if (!slotId || !name || !phone) {
+    errEl.innerHTML = '<p class="error-msg">Por favor completa clase, nombre y teléfono.</p>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'PROCESANDO...';
+
+  const slot = mySlots.find(s => s.id === slotId);
+  const groupCount = (slot?.bookings || []).filter(b => !b.cancelled && b.booking_mode === 'group').length;
+
+  // Create the booking
+  const { error: bookingErr } = await supabaseClient.from('bookings').insert({
+    slot_id: slotId,
+    customer_name: name,
+    customer_phone: phone,
+    booking_mode: mode,
+    cancelled: false
+  });
+
+  if (bookingErr) {
+    errEl.innerHTML = '<p class="error-msg">Error al crear la reserva. Intenta de nuevo.</p>';
+    btn.disabled = false;
+    btn.textContent = '✓ CONFIRMAR RESERVA';
+    return;
+  }
+
+  // Mark slot as booked if private or group is now full
+  if (mode === 'private') {
+    await supabaseClient.from('time_slots').update({ is_booked: true }).eq('id', slotId);
+  } else {
+    const newCount = groupCount + 1;
+    const updates = { group_booking_count: newCount };
+    if (newCount >= 4) updates.is_booked = true;
+    await supabaseClient.from('time_slots').update(updates).eq('id', slotId);
+  }
+
+  // Update Google Calendar event: title = client name, color = instructor's color
+  if (slot?.google_event_id) {
+    updateCalendarBooking({
+      slot_id: slotId,
+      google_event_id: slot.google_event_id,
+      instructor_id: currentUser.id,
+      instructor_name: currentInstructor?.name,
+      client_name: name,
+      date: slot.date,
+      start_time: slot.start_time,
+      class_type: mode
+    });
+  }
+
+  // Send confirmation email to client
+  if (email) {
+    sendEmail('booking_confirmed', email, {
+      customer_name: name,
+      instructor_name: currentInstructor?.name,
+      date: slot?.date,
+      time: slot?.start_time,
+      class_type: mode === 'group' ? 'Grupal' : 'Privada'
+    });
+  }
+
+  // Reset form
+  document.getElementById('bc-slot').value = '';
+  document.getElementById('bc-name').value = '';
+  document.getElementById('bc-phone').value = '';
+  document.getElementById('bc-email').value = '';
+  const toast = document.getElementById('bc-toast');
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 4000);
+  btn.disabled = false;
+  btn.textContent = '✓ CONFIRMAR RESERVA';
+  await loadSlots();
+}
+
+async function updateCalendarBooking(data) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/manage-google-calendar-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ action: 'update_booking', ...data })
+    });
+  } catch(e) { console.warn('Calendar update failed (non-critical):', e); }
 }
 
 function switchTab(tab, el) {
