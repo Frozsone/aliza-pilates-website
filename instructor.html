@@ -380,23 +380,22 @@
       <!-- ── RESERVAR PARA CLIENTE ──────────────────── -->
       <div class="book-client-panel">
         <h3>Reservar para cliente</h3>
-        <div class="form-group">
-          <label>Clase disponible</label>
-          <select id="bc-slot">
-            <option value="">— Cargando clases... —</option>
-          </select>
-        </div>
+        <p style="font-size:0.78rem;color:var(--charcoal);line-height:1.6;margin-bottom:1.2rem;">
+          Crea la clase y reserva para un cliente en un solo paso. El evento aparecerá en Google Calendar con el nombre del cliente.
+        </p>
         <div class="form-group">
           <label>Nombre del cliente</label>
-          <input type="text" id="bc-name" placeholder="Nombre completo" />
+          <input type="text" id="bc-name" placeholder="Nombre completo" autocomplete="off" />
         </div>
         <div class="form-group">
-          <label>Teléfono</label>
-          <input type="tel" id="bc-phone" placeholder="+507 ..." />
+          <label>Fecha</label>
+          <input type="date" id="bc-date" />
         </div>
         <div class="form-group">
-          <label>Correo electrónico (para confirmación)</label>
-          <input type="email" id="bc-email" placeholder="cliente@correo.com" />
+          <label>Hora</label>
+          <select id="bc-time">
+            <option value="">— Selecciona hora —</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Modalidad</label>
@@ -406,7 +405,7 @@
           </select>
         </div>
         <div id="bc-error"></div>
-        <button class="btn-book-client" onclick="bookForClient()" id="bc-btn">✓ CONFIRMAR RESERVA</button>
+        <button class="btn-book-client" onclick="bookForClient()" id="bc-btn">✓ CREAR Y RESERVAR</button>
         <div class="success-toast" id="bc-toast">✓ Reserva creada y calendario actualizado</div>
       </div><!-- end book-client-panel -->
     </div><!-- end add-panel -->
@@ -496,7 +495,9 @@ async function loadDashboard() {
 
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('new-date').min = today;
+  document.getElementById('bc-date').min  = today;
   populateTimeOptions();
+  populateClientTimeOptions();
   await loadSlots();
   await checkGoogleConnection();
 
@@ -679,114 +680,118 @@ async function loadSlots() {
 
   mySlots = data || [];
   renderSlots();
-  populateClientSlotDropdown();
+  populateClientTimeOptions();
 }
 
-function populateClientSlotDropdown() {
-  const today = new Date().toISOString().split('T')[0];
-  const sel = document.getElementById('bc-slot');
+function populateClientTimeOptions() {
+  const sel = document.getElementById('bc-time');
   if (!sel) return;
-  const available = mySlots.filter(s => {
-    if (s.date < today) return false;
-    const activeBookings = (s.bookings || []).filter(b => !b.cancelled);
-    const groupCount = activeBookings.filter(b => b.booking_mode === 'group').length;
-    if (s.is_booked && s.slot_mode !== 'group_only') return false;
-    if (s.slot_mode === 'group_only' && groupCount >= 4) return false;
-    return true;
-  });
-  if (available.length === 0) {
-    sel.innerHTML = '<option value="">— No hay clases disponibles —</option>';
-  } else {
-    sel.innerHTML = '<option value="">— Selecciona una clase —</option>' +
-      available.map(s => {
-        const modeLabel = s.slot_mode === 'group_only' ? 'Grupal' : s.slot_mode === 'private_only' ? 'Privada' : 'Privada/Grupal';
-        return `<option value="${s.id}" data-date="${s.date}" data-time="${s.start_time}" data-mode="${s.slot_mode}" data-geid="${s.google_event_id || ''}">${formatDate(s.date)} · ${formatTime(s.start_time)} — ${modeLabel}</option>`;
-      }).join('');
+  sel.innerHTML = '<option value="">— Selecciona hora —</option>';
+  for (let h = 7; h <= 20; h++) {
+    ['00', '30'].forEach(m => {
+      const hStr  = String(h).padStart(2, '0');
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      const ampm  = h >= 12 ? 'PM' : 'AM';
+      sel.innerHTML += `<option value="${hStr}:${m}">${hour12}:${m} ${ampm}</option>`;
+    });
   }
 }
 
 async function bookForClient() {
-  const slotId = document.getElementById('bc-slot').value;
-  const name   = document.getElementById('bc-name').value.trim();
-  const phone  = document.getElementById('bc-phone').value.trim();
-  const email  = document.getElementById('bc-email').value.trim();
-  const mode   = document.getElementById('bc-mode').value;
-  const errEl  = document.getElementById('bc-error');
-  const btn    = document.getElementById('bc-btn');
+  const name  = document.getElementById('bc-name').value.trim();
+  const date  = document.getElementById('bc-date').value;
+  const time  = document.getElementById('bc-time').value;
+  const mode  = document.getElementById('bc-mode').value; // 'private' | 'group'
+  const errEl = document.getElementById('bc-error');
+  const btn   = document.getElementById('bc-btn');
 
   errEl.innerHTML = '';
-  if (!slotId || !name || !phone) {
-    errEl.innerHTML = '<p class="error-msg">Por favor completa clase, nombre y teléfono.</p>';
+  if (!name || !date || !time) {
+    errEl.innerHTML = '<p class="error-msg">Por favor completa nombre, fecha y hora.</p>';
     return;
   }
 
   btn.disabled = true;
   btn.textContent = 'PROCESANDO...';
 
-  const slot = mySlots.find(s => s.id === slotId);
-  const groupCount = (slot?.bookings || []).filter(b => !b.cancelled && b.booking_mode === 'group').length;
+  const slotMode    = mode === 'private' ? 'private_only' : 'group_only';
+  const bookingMode = mode; // 'private' | 'group'
 
-  // Create the booking
-  const { error: bookingErr } = await supabaseClient.from('bookings').insert({
-    slot_id: slotId,
-    customer_name: name,
-    customer_phone: phone,
-    booking_mode: mode,
-    cancelled: false
-  });
+  // 1. Create the time slot (already booked from the start)
+  const { data: newSlot, error: slotErr } = await supabaseClient
+    .from('time_slots')
+    .insert({
+      instructor_id:      currentUser.id,
+      date,
+      start_time:         time,
+      class_type:         mode === 'group' ? 'Grupal' : 'Privada',
+      slot_mode:          slotMode,
+      is_booked:          true,
+      group_booking_count: mode === 'group' ? 1 : 0
+    })
+    .select()
+    .single();
 
-  if (bookingErr) {
-    errEl.innerHTML = '<p class="error-msg">Error al crear la reserva. Intenta de nuevo.</p>';
-    btn.disabled = false;
-    btn.textContent = '✓ CONFIRMAR RESERVA';
+  if (slotErr || !newSlot) {
+    errEl.innerHTML = '<p class="error-msg">Error al crear la clase. Intenta de nuevo.</p>';
+    btn.disabled = false; btn.textContent = '✓ CREAR Y RESERVAR';
     return;
   }
 
-  // Mark slot as booked if private or group is now full
-  if (mode === 'private') {
-    await supabaseClient.from('time_slots').update({ is_booked: true }).eq('id', slotId);
-  } else {
-    const newCount = groupCount + 1;
-    const updates = { group_booking_count: newCount };
-    if (newCount >= 4) updates.is_booked = true;
-    await supabaseClient.from('time_slots').update(updates).eq('id', slotId);
+  // 2. Create the booking record
+  const { error: bookingErr } = await supabaseClient.from('bookings').insert({
+    slot_id:       newSlot.id,
+    customer_name: name,
+    customer_phone: '',
+    booking_mode:  bookingMode,
+    cancelled:     false
+  });
+
+  if (bookingErr) {
+    // Roll back the slot
+    await supabaseClient.from('time_slots').delete().eq('id', newSlot.id);
+    errEl.innerHTML = '<p class="error-msg">Error al crear la reserva. Intenta de nuevo.</p>';
+    btn.disabled = false; btn.textContent = '✓ CREAR Y RESERVAR';
+    return;
   }
 
-  // Update Google Calendar event: title = client name, color = instructor's color
-  if (slot?.google_event_id) {
-    updateCalendarBooking({
-      slot_id: slotId,
-      google_event_id: slot.google_event_id,
-      instructor_id: currentUser.id,
-      instructor_name: currentInstructor?.name,
-      client_name: name,
-      date: slot.date,
-      start_time: slot.start_time,
-      class_type: mode
+  // 3. Create Google Calendar event with client name as title + instructor color
+  //    (fire-and-forget — booking is already saved even if calendar fails)
+  try {
+    const gcalRes = await fetch(`${SUPABASE_URL}/functions/v1/manage-google-calendar-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({
+        action:          'create',
+        instructor_id:   currentUser.id,
+        instructor_name: currentInstructor?.name,
+        date,
+        time,
+        slot_mode:       slotMode,
+        custom_title:    name,          // ← client name as event title
+      })
     });
+    const gcalResult = await gcalRes.json();
+    // Save google_event_id back to the slot so it can be deleted later if needed
+    if (gcalResult.google_event_id) {
+      await supabaseClient
+        .from('time_slots')
+        .update({ google_event_id: gcalResult.google_event_id })
+        .eq('id', newSlot.id);
+    }
+  } catch(e) {
+    console.warn('Calendar event failed (non-critical):', e);
   }
 
-  // Send confirmation email to client
-  if (email) {
-    sendEmail('booking_confirmed', email, {
-      customer_name: name,
-      instructor_name: currentInstructor?.name,
-      date: slot?.date,
-      time: slot?.start_time,
-      class_type: mode === 'group' ? 'Grupal' : 'Privada'
-    });
-  }
-
-  // Reset form
-  document.getElementById('bc-slot').value = '';
+  // 4. Reset form and show success
   document.getElementById('bc-name').value = '';
-  document.getElementById('bc-phone').value = '';
-  document.getElementById('bc-email').value = '';
+  document.getElementById('bc-date').value = '';
+  document.getElementById('bc-time').value = '';
   const toast = document.getElementById('bc-toast');
   toast.style.display = 'block';
   setTimeout(() => toast.style.display = 'none', 4000);
   btn.disabled = false;
-  btn.textContent = '✓ CONFIRMAR RESERVA';
+  btn.textContent = '✓ CREAR Y RESERVAR';
   await loadSlots();
 }
 
