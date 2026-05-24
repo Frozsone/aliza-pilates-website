@@ -87,7 +87,6 @@
 
     .no-slots { text-align: center; padding: 4rem 2rem; color: var(--charcoal); }
     .no-slots p { font-size: 1rem; line-height: 1.8; }
-    .no-slots .no-slots-icon { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--greige-dark); margin-bottom: 1rem; opacity: 0.5; }
 
     /* BOOKING MODAL */
     .modal-overlay {
@@ -135,10 +134,6 @@
 
     .loading { text-align: center; padding: 4rem; color: var(--charcoal); letter-spacing: 0.1em; font-size: 0.85rem; }
     .error-msg { color: var(--error); font-size: 0.8rem; margin-top: 0.4rem; }
-    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-    .skeleton-card { background: linear-gradient(90deg, var(--greige-light) 25%, #edeae3 50%, var(--greige-light) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; height: 96px; border: 1px solid var(--greige-light); }
-    .skeleton-header { height: 20px; width: 160px; margin-bottom: 1.5rem; border-radius: 2px; background: linear-gradient(90deg, var(--greige-light) 25%, #edeae3 50%, var(--greige-light) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
-    .skeleton-group { margin-bottom: 3rem; }
 
     [data-lang="en"] { display: none; }
     [data-lang="es"] { display: block; }
@@ -268,23 +263,7 @@
   </div><!-- end filters-panel -->
 
   <div class="slots-panel">
-    <div id="slots-container">
-      <div class="skeleton-group">
-        <div class="skeleton-header"></div>
-        <div class="slots-grid">
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>
-      </div>
-      <div class="skeleton-group">
-        <div class="skeleton-header"></div>
-        <div class="slots-grid">
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>
-      </div>
-    </div>
+    <div id="slots-container"><div class="loading">Cargando clases disponibles...</div></div>
   </div>
 </div>
 
@@ -415,7 +394,6 @@ function renderSlots() {
 
   if (filtered.length === 0) {
     container.innerHTML = `<div class="no-slots">
-      <div class="no-slots-icon">○</div>
       <p>${isEs() ? 'No hay clases disponibles con estos filtros.<br>Intenta cambiar la fecha o la instructora.' : 'No classes available with these filters.<br>Try changing the date or instructor.'}</p>
     </div>`;
     return;
