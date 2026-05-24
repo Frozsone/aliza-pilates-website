@@ -405,12 +405,7 @@
           </select>
         </div>
         <div id="bc-error"></div>
-        <div id="bc-confirm-preview" style="display:none;">
-          <div id="bc-preview-content" style="background:var(--cream);padding:0.9rem 1rem;border-left:3px solid var(--greige-dark);font-size:0.83rem;line-height:1.8;color:var(--charcoal-dark);margin-bottom:0.8rem;"></div>
-          <button class="btn-book-client" onclick="bookForClient()" id="bc-confirm-final-btn">✓ CONFIRMAR RESERVA</button>
-          <button onclick="cancelBcConfirm()" style="width:100%;margin-top:0.6rem;padding:0.7rem;background:none;border:1px solid var(--greige);color:var(--charcoal-dark);font-family:'Jost',sans-serif;font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='var(--greige-light)'" onmouseout="this.style.background='none'">EDITAR DATOS</button>
-        </div>
-        <button class="btn-book-client" onclick="showBcConfirm()" id="bc-btn">✓ CREAR Y RESERVAR</button>
+        <button class="btn-book-client" onclick="bookForClient()" id="bc-btn">✓ CREAR Y RESERVAR</button>
         <div class="success-toast" id="bc-toast">✓ Reserva creada y calendario actualizado</div>
       </div><!-- end book-client-panel -->
     </div><!-- end add-panel -->
@@ -592,9 +587,8 @@ async function handleRequest(requestId, newStatus) {
 
   if (newStatus === 'confirmed') {
     // 1. Create the time slot
-    const isGroupClass = req.class_type === 'Grupal' || req.class_type === 'Mat Class';
-    const bookingMode = isGroupClass ? 'group' : 'private';
-    const slotMode = isGroupClass ? 'group_only' : 'private_only';
+    const bookingMode = (req.class_type === 'Grupal') ? 'group' : 'private';
+    const slotMode = (req.class_type === 'Grupal') ? 'group_only' : 'private_only';
 
     const { data: slot, error: slotErr } = await supabaseClient
       .from('time_slots')
@@ -703,38 +697,19 @@ function populateClientTimeOptions() {
   }
 }
 
-function showBcConfirm() {
-  const name = document.getElementById('bc-name').value.trim();
-  const date = document.getElementById('bc-date').value;
-  const time = document.getElementById('bc-time').value;
-  const mode = document.getElementById('bc-mode').value;
+async function bookForClient() {
+  const name  = document.getElementById('bc-name').value.trim();
+  const date  = document.getElementById('bc-date').value;
+  const time  = document.getElementById('bc-time').value;
+  const mode  = document.getElementById('bc-mode').value; // 'private' | 'group'
   const errEl = document.getElementById('bc-error');
+  const btn   = document.getElementById('bc-btn');
 
   errEl.innerHTML = '';
   if (!name || !date || !time) {
     errEl.innerHTML = '<p class="error-msg">Por favor completa nombre, fecha y hora.</p>';
     return;
   }
-
-  const modeLabel = mode === 'private' ? 'Privada' : 'Grupal';
-  document.getElementById('bc-preview-content').innerHTML =
-    `<strong>${name}</strong><br>${formatDate(date)} · ${formatTime(time)} · ${modeLabel}`;
-  document.getElementById('bc-confirm-preview').style.display = 'block';
-  document.getElementById('bc-btn').style.display = 'none';
-}
-
-function cancelBcConfirm() {
-  document.getElementById('bc-confirm-preview').style.display = 'none';
-  document.getElementById('bc-btn').style.display = 'block';
-}
-
-async function bookForClient() {
-  const name  = document.getElementById('bc-name').value.trim();
-  const date  = document.getElementById('bc-date').value;
-  const time  = document.getElementById('bc-time').value;
-  const mode  = document.getElementById('bc-mode').value;
-  const errEl = document.getElementById('bc-error');
-  const btn   = document.getElementById('bc-confirm-final-btn');
 
   btn.disabled = true;
   btn.textContent = 'PROCESANDO...';
@@ -759,7 +734,7 @@ async function bookForClient() {
 
   if (slotErr || !newSlot) {
     errEl.innerHTML = '<p class="error-msg">Error al crear la clase. Intenta de nuevo.</p>';
-    btn.disabled = false; btn.textContent = '✓ CONFIRMAR RESERVA';
+    btn.disabled = false; btn.textContent = '✓ CREAR Y RESERVAR';
     return;
   }
 
@@ -773,9 +748,10 @@ async function bookForClient() {
   });
 
   if (bookingErr) {
+    // Roll back the slot
     await supabaseClient.from('time_slots').delete().eq('id', newSlot.id);
     errEl.innerHTML = '<p class="error-msg">Error al crear la reserva. Intenta de nuevo.</p>';
-    btn.disabled = false; btn.textContent = '✓ CONFIRMAR RESERVA';
+    btn.disabled = false; btn.textContent = '✓ CREAR Y RESERVAR';
     return;
   }
 
@@ -811,12 +787,11 @@ async function bookForClient() {
   document.getElementById('bc-name').value = '';
   document.getElementById('bc-date').value = '';
   document.getElementById('bc-time').value = '';
-  cancelBcConfirm();
   const toast = document.getElementById('bc-toast');
   toast.style.display = 'block';
   setTimeout(() => toast.style.display = 'none', 4000);
   btn.disabled = false;
-  btn.textContent = '✓ CONFIRMAR RESERVA';
+  btn.textContent = '✓ CREAR Y RESERVAR';
   await loadSlots();
 }
 
