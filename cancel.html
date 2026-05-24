@@ -330,29 +330,29 @@ async function lookupCode() {
   }
 
   const row = data[0];
-  // Reconstruct the shape cancel.html expects
   foundBooking = {
     id: row.id,
     customer_name: row.customer_name,
+    booking_mode: row.booking_mode,
     time_slots: {
       id: row.slot_id,
       date: row.slot_date,
       start_time: row.slot_time,
       class_type: row.slot_class_type,
       is_booked: row.slot_is_booked,
+      group_booking_count: row.slot_group_booking_count,
       instructors: { name: row.instructor_name }
     }
   };
-  const slot = data.time_slots;
+  const slot = foundBooking.time_slots;
 
-  // Show booking details
   document.getElementById('booking-preview').innerHTML = `
     <p>
-      <strong>Instructora:</strong> ${slot?.instructors?.name}<br>
-      <strong>Fecha:</strong> ${formatDate(slot?.date)}<br>
-      <strong>Hora:</strong> ${formatTime(slot?.start_time)}<br>
-      <strong>Tipo:</strong> ${slot?.class_type}<br>
-      <strong>Nombre:</strong> ${data.customer_name}
+      <strong>Instructora:</strong> ${slot.instructors?.name || '—'}<br>
+      <strong>Fecha:</strong> ${formatDate(slot.date)}<br>
+      <strong>Hora:</strong> ${formatTime(slot.start_time)}<br>
+      <strong>Tipo:</strong> ${slot.class_type}<br>
+      <strong>Nombre:</strong> ${row.customer_name}
     </p>`;
 
   // Check 24-hour policy
@@ -394,10 +394,15 @@ async function confirmCancel() {
     return;
   }
 
-  await supabaseClient
-    .from('time_slots')
-    .update({ is_booked: false })
-    .eq('id', foundBooking.time_slots.id);
+  const slot = foundBooking.time_slots;
+  if (foundBooking.booking_mode === 'group') {
+    const newCount = Math.max(0, (slot.group_booking_count || 1) - 1);
+    const slotUpdates = { group_booking_count: newCount };
+    if (newCount === 0) slotUpdates.is_booked = false;
+    await supabaseClient.from('time_slots').update(slotUpdates).eq('id', slot.id);
+  } else {
+    await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
+  }
 
   document.getElementById('step-confirm').style.display = 'none';
   document.getElementById('step-done').style.display = 'block';
