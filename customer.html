@@ -94,6 +94,8 @@
     .btn-cancel-booking:hover { border-color: var(--error); color: var(--error); }
     .empty-state { text-align: center; padding: 4rem 2rem; color: var(--charcoal); }
     .empty-state p { font-size: 0.95rem; line-height: 1.8; }
+    .empty-state .empty-icon { font-size: 1.8rem; margin-bottom: 1rem; opacity: 0.4; }
+    .cancel-code-row { margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--greige-light); }
 
     /* REQUEST FORM */
     .request-form-wrap { max-width: 560px; }
@@ -536,7 +538,7 @@ async function loadDashboard() {
 async function loadBookings() {
   const { data } = await supabaseClient
     .from('bookings')
-    .select('*, time_slots(*, instructors(name)), booking_mode')
+    .select('id, slot_id, booking_mode, cancelled, cancel_code, created_at, time_slots(id, date, start_time, class_type, is_booked, group_booking_count, google_event_id, instructor_id, instructors(name))')
     .eq('customer_id', currentUser.id)
     .order('created_at', { ascending: false });
   myBookings = data || [];
@@ -564,7 +566,7 @@ function renderBookings() {
   let html = '';
 
   if (myBookings.length === 0) {
-    container.innerHTML = `<div class="empty-state"><p>Todavía no tienes reservas.<br>¡Reserva tu primera clase hoy!</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">○</div><p>Todavía no tienes reservas.<br>¡Reserva tu primera clase hoy!</p></div>`;
     return;
   }
 
@@ -573,11 +575,12 @@ function renderBookings() {
     html += '<div class="bookings-list">';
     upcoming.forEach(b => {
       const slot = b.time_slots;
-      html += `<div class="booking-row">
+      html += `<div class="booking-row" style="border-left:3px solid var(--greige-dark);">
         <div class="booking-row-info">
           <div class="booking-row-date">${formatDate(slot?.date)}</div>
           <div class="booking-row-time">${formatTime(slot?.start_time)}</div>
           <div class="booking-row-details">${slot?.instructors?.name} · <span style="font-size:0.72rem;padding:0.15rem 0.5rem;background:${b.booking_mode === 'group' ? 'var(--greige-light)' : '#f0f7f2'};color:${b.booking_mode === 'group' ? 'var(--charcoal-dark)' : '#4A7C59'};">${b.booking_mode === 'group' ? 'Grupal' : 'Privada'}</span></div>
+          ${b.cancel_code ? `<div style="margin-top:0.5rem;font-size:0.7rem;color:var(--greige-dark);letter-spacing:0.04em;">Código de cancelación: <a href="cancel.html?code=${b.cancel_code}" style="color:var(--charcoal-dark);font-family:'Cormorant Garamond',serif;font-size:1rem;letter-spacing:0.25em;font-weight:400;text-decoration:none;">${b.cancel_code}</a></div>` : ''}
         </div>
         <div style="display:flex;align-items:center;gap:1rem;">
           <span class="status-badge status-upcoming">Confirmada</span>
@@ -646,12 +649,25 @@ async function confirmCancel() {
 
   await supabaseClient.from('bookings').update({ cancelled: true }).eq('id', cancelTargetId);
 
+  if (slot.google_event_id) {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        await fetch(`${SUPABASE_URL}/functions/v1/manage-google-calendar-event`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+          body: JSON.stringify({ action: 'delete', instructor_id: slot.instructor_id, google_event_id: slot.google_event_id })
+        });
+      }
+    } catch(e) { console.warn('GCal delete failed (non-critical):', e); }
+  }
+
   // For private bookings: always free the slot
   // For group bookings: only free the slot if it was full (is_booked=true) meaning count drops below 4
   if (booking.booking_mode === 'group') {
-    // Decrement the group count and reopen slot if it was full
-    const updates = { group_booking_count: Math.max(0, (slot.group_booking_count || 1) - 1) };
-    if (slot.is_booked) updates.is_booked = false;
+    const newCount = Math.max(0, (slot.group_booking_count || 1) - 1);
+    const updates = { group_booking_count: newCount };
+    if (newCount === 0) updates.is_booked = false;
     await supabaseClient.from('time_slots').update(updates).eq('id', slot.id);
   } else {
     await supabaseClient.from('time_slots').update({ is_booked: false }).eq('id', slot.id);
