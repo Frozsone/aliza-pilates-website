@@ -55,6 +55,7 @@
     .nav-logo img {
       height: 48px;
       width: auto;
+      mix-blend-mode: multiply;
     }
 
     .nav-links {
@@ -172,16 +173,20 @@
       margin-bottom: 1.5rem;
     }
 
-    .anniversary-badge-inline {
-      margin-bottom: 1.8rem;
-      width: 180px;
+    /* Desktop logo — on cream background, multiply knocks out white */
+    .hero-logo-wrap {
+      margin-bottom: 2rem;
+      width: 160px;
     }
-    .anniversary-logo-img {
+    .hero-logo-wrap img {
       width: 100%;
       height: auto;
       display: block;
       mix-blend-mode: multiply;
     }
+    /* Keep old class working */
+    .anniversary-badge-inline { margin-bottom: 1.8rem; width: 180px; }
+    .anniversary-logo-img { width: 100%; height: auto; display: block; mix-blend-mode: multiply; }
 
     .hero h1 {
       font-family: 'Cormorant Garamond', serif;
@@ -965,7 +970,8 @@
       }
       .nav-logo img {
         height: 36px;
-        filter: brightness(0) invert(1);
+        mix-blend-mode: screen;
+        filter: none;
       }
       /* hamburger lines go white on transparent nav */
       .hamburger span { background: #f7f5f0; }
@@ -1027,15 +1033,13 @@
         animation: fadeUp 0.9s ease both;
       }
 
-      /* 25-year logo: use screen blend to knock out white bg on dark overlay */
-      .anniversary-badge-inline {
-        width: 90px;
+      /* Mobile logo — on dark overlay, screen knocks out white bg */
+      .hero-logo-wrap {
+        width: 110px;
         margin-bottom: 1rem;
       }
-      .anniversary-logo-img {
+      .hero-logo-wrap img {
         mix-blend-mode: screen;
-        filter: none;
-        opacity: 1;
       }
 
       /* Romana's certification badge */
@@ -1233,7 +1237,7 @@
   <!-- NAV -->
   <nav>
     <div class="nav-logo">
-      <img src="logo-white-bg.jpeg" alt="Aliza Pilates Studio" onerror="this.style.display='none'" />
+      <img src="LOGOS_ALIZA_2026_sin_fondo-01.jpg" alt="Aliza Pilates Studio" onerror="this.style.display='none'" />
     </div>
     <ul class="nav-links">
       <li><a href="#about" data-lang="en">About</a><a href="#about" data-lang="es">Nosotros</a></li>
@@ -1256,8 +1260,9 @@
   <section class="hero">
     <div class="hero-left">
       <div class="hero-content">
-        <div class="anniversary-badge-inline">
-          <img src="logo-25-white.jpeg" alt="25 Años de Excelencia — Aliza Pilates Studio" class="anniversary-logo-img" />
+        <!-- ALIZA LOGO -->
+        <div class="hero-logo-wrap">
+          <img src="LOGOS_ALIZA_2026_sin_fondo-01.jpg" alt="Aliza Pilates Studio" />
         </div>
         <div class="hero-romana-badge">
           <span>Centro de Certificación · Romana's Pilates Internacional</span>
