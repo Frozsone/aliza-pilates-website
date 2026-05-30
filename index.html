@@ -55,7 +55,7 @@
     .nav-logo img {
       height: 48px;
       width: auto;
-      filter: brightness(0.45) sepia(0.3);
+      mix-blend-mode: multiply;
     }
 
     .nav-links {
@@ -173,8 +173,7 @@
       margin-bottom: 1.5rem;
     }
 
-    /* Desktop hero logo — PNG has white/light artwork on transparent.
-       On cream bg we darken it so the greige tones show up nicely. */
+    /* Desktop hero logo — black bg PNG, multiply makes black invisible on light cream bg */
     .hero-logo-wrap {
       margin-bottom: 2rem;
       width: 160px;
@@ -183,7 +182,7 @@
       width: 100%;
       height: auto;
       display: block;
-      filter: brightness(0.45) sepia(0.3);
+      mix-blend-mode: multiply;
     }
     /* Keep old class working */
     .anniversary-badge-inline { margin-bottom: 1.8rem; width: 180px; }
@@ -971,6 +970,7 @@
       }
       .nav-logo img {
         height: 36px;
+        mix-blend-mode: screen;
         filter: none;
       }
       /* hamburger lines go white on transparent nav */
@@ -1033,13 +1033,13 @@
         animation: fadeUp 0.9s ease both;
       }
 
-      /* Mobile logo — transparent PNG, shows perfectly on dark photo */
+      /* Mobile logo — black bg PNG, screen makes black invisible on dark photo */
       .hero-logo-wrap {
         width: 130px;
         margin-bottom: 1rem;
       }
       .hero-logo-wrap img {
-        mix-blend-mode: normal;
+        mix-blend-mode: screen;
         filter: none;
       }
 
