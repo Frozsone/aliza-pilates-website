@@ -225,6 +225,7 @@
 
     /* ───── HERO STATS BAR (mobile only, hidden on desktop) ───── */
     .hero-stats-bar { display: none; }
+    .hero-romana-badge { display: none; }
 
     /* ───── ABOUT PHOTO ───── */
     .about-visual {
@@ -1026,15 +1027,41 @@
         animation: fadeUp 0.9s ease both;
       }
 
-      /* 25-year logo: small, white */
+      /* 25-year logo: use screen blend to knock out white bg on dark overlay */
       .anniversary-badge-inline {
-        width: 80px;
+        width: 90px;
         margin-bottom: 1rem;
       }
       .anniversary-logo-img {
-        mix-blend-mode: normal;
-        filter: brightness(0) invert(1);
-        opacity: 0.85;
+        mix-blend-mode: screen;
+        filter: none;
+        opacity: 1;
+      }
+
+      /* Romana's certification badge */
+      .hero-romana-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+        background: rgba(200, 191, 168, 0.15);
+        border: 0.5px solid rgba(200, 191, 168, 0.4);
+        border-radius: 20px;
+        padding: 0.35rem 0.85rem;
+      }
+      .hero-romana-badge span {
+        font-family: 'Jost', sans-serif;
+        font-size: 0.6rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: rgba(232, 228, 217, 0.8);
+        font-weight: 400;
+      }
+      .hero-romana-badge::before {
+        content: '✦';
+        font-size: 0.5rem;
+        color: #c8bfa8;
+        flex-shrink: 0;
       }
 
       /* Location eyebrow */
@@ -1231,6 +1258,9 @@
       <div class="hero-content">
         <div class="anniversary-badge-inline">
           <img src="logo-25-white.jpeg" alt="25 Años de Excelencia — Aliza Pilates Studio" class="anniversary-logo-img" />
+        </div>
+        <div class="hero-romana-badge">
+          <span>Centro de Certificación · Romana's Pilates Internacional</span>
         </div>
         <p class="hero-eyebrow">
           <span data-lang="en">Panama City, Panama</span>
