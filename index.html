@@ -94,9 +94,7 @@
       transition: all 0.2s;
     }
 
-    .lang-toggle:hover {
-      background: var(--greige-light);
-    }
+    .lang-toggle:hover { background: var(--greige-light); }
 
     /* ───── HERO ───── */
     .hero {
@@ -174,12 +172,15 @@
       margin-bottom: 1.5rem;
     }
 
-    .hero-logo {
-      width: 160px;
+    .anniversary-badge-inline {
+      margin-bottom: 1.8rem;
+      width: 180px;
+    }
+    .anniversary-logo-img {
+      width: 100%;
       height: auto;
-      margin: 0 auto 2rem;
       display: block;
-      opacity: 0.9;
+      mix-blend-mode: multiply;
     }
 
     .hero h1 {
@@ -220,11 +221,18 @@
       transition: all 0.3s ease;
     }
 
-    .hero-cta:hover {
-      background: var(--text-dark);
+    .hero-cta:hover { background: var(--text-dark); }
+
+    /* ───── ABOUT ───── */
+    .about {
+      background: var(--white);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+      padding: 7rem 4rem;
     }
 
-    /* ───── ABOUT PHOTO ───── */
     .about-visual {
       display: flex;
       flex-direction: column;
@@ -248,131 +256,11 @@
 
     .about-photo:hover img { transform: scale(1.03); }
 
-    /* ───── GALLERY SECTION ───── */
-    .gallery-section {
-      background: var(--charcoal-dark);
-      padding: 0;
-    }
-
-    .gallery-strip {
-      display: grid;
-      grid-template-columns: 1.2fr 1fr 1fr;
-      height: 480px;
-    }
-
-    .gallery-item {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .gallery-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      display: block;
-      transition: transform 0.6s ease, filter 0.4s ease;
-      filter: brightness(0.88);
-    }
-
-    .gallery-item:hover img {
-      transform: scale(1.04);
-      filter: brightness(0.95);
-    }
-
-    .gallery-caption {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 1.5rem;
-      background: linear-gradient(to top, rgba(58,57,53,0.7) 0%, transparent 100%);
-      color: var(--greige-light);
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    .gallery-item:hover .gallery-caption { opacity: 1; }
-
-    /* ───── TEAM BANNER ───── */
-    .team-banner {
-      width: 100%;
-      max-width: 480px;
-      margin: 0 auto 3rem;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .team-banner img {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .team-banner-caption {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.72rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--greige-dark);
-    }
-
-    /* ───── SECTION BASICS ───── */
-    section { padding: 7rem 4rem; }
-
-    .section-label {
-      font-family: 'Jost', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: var(--greige-dark);
-      margin-bottom: 1rem;
-    }
-
-    .section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2.2rem, 4vw, 3.5rem);
-      font-weight: 300;
-      line-height: 1.15;
-      color: var(--charcoal-dark);
-    }
-
-    .section-title em { font-style: italic; }
-
-    .divider {
-      width: 50px;
-      height: 1px;
-      background: var(--greige-dark);
-      margin: 1.8rem 0;
-    }
-
-    /* ───── ABOUT ───── */
-    .about {
-      background: var(--white);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6rem;
-      align-items: center;
-    }
-
     .about-text p {
       font-size: 1rem;
       line-height: 1.9;
       color: var(--charcoal-dark);
       margin-bottom: 1.4rem;
-    }
-
-    .anniversary-badge-inline {
-      margin-bottom: 1.8rem;
-      width: 180px;
-    }
-    .anniversary-logo-img {
-      width: 100%;
-      height: auto;
-      display: block;
-      mix-blend-mode: multiply; /* removes white background on cream surface */
     }
 
     .about-pillars {
@@ -435,6 +323,7 @@
       grid-template-columns: 1fr 1fr;
       gap: 6rem;
       align-items: center;
+      padding: 7rem 4rem;
     }
 
     .founder-visual {
@@ -445,23 +334,6 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
-    }
-
-    .founder-visual-placeholder {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .founder-visual-placeholder img {
-      width: 120px;
-      opacity: 0.4;
-    }
-
-    .founder-visual-placeholder p {
-      font-size: 0.75rem;
-      color: var(--charcoal);
-      letter-spacing: 0.1em;
-      margin-top: 1rem;
     }
 
     .founder-text p {
@@ -485,6 +357,128 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--charcoal);
+    }
+
+    /* ───── SECTION BASICS ───── */
+    section { padding: 7rem 4rem; }
+
+    .section-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--charcoal-dark);
+    }
+
+    .section-title em { font-style: italic; }
+
+    .divider {
+      width: 50px;
+      height: 1px;
+      background: var(--greige-dark);
+      margin: 1.8rem 0;
+    }
+
+    /* ───── CLASSES ───── */
+    .classes-section {
+      background: var(--white);
+      padding: 7rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .classes-intro { max-width: 700px; }
+
+    .classes-desc {
+      font-size: 1rem;
+      line-height: 1.9;
+      color: var(--charcoal-dark);
+      margin-top: 1rem;
+      max-width: 600px;
+    }
+
+    .class-types {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .class-card {
+      padding: 2rem;
+      background: var(--cream);
+      border-top: 2px solid var(--greige);
+      transition: border-color 0.2s;
+    }
+
+    .class-card.featured { border-top-color: var(--charcoal-dark); }
+    .class-card:hover { border-top-color: var(--charcoal-dark); }
+
+    .class-card-top {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .class-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--charcoal-dark);
+    }
+
+    .class-tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--greige-dark);
+    }
+
+    .class-card p {
+      font-size: 0.88rem;
+      line-height: 1.75;
+      color: var(--charcoal);
+    }
+
+    .equipment-block { margin-top: 1rem; }
+
+    .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.8rem;
+      margin-top: 2rem;
+    }
+
+    .equip-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.2rem 1.5rem;
+      background: var(--cream);
+    }
+
+    .equip-item span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      color: var(--greige-dark);
+      font-weight: 300;
+      min-width: 24px;
+    }
+
+    .equip-item p {
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      color: var(--charcoal-dark);
     }
 
     /* ───── INSTRUCTORS ───── */
@@ -532,9 +526,7 @@
       flex-shrink: 0;
     }
 
-    .instructor-card:hover .instructor-photo {
-      border-color: var(--charcoal-dark);
-    }
+    .instructor-card:hover .instructor-photo { border-color: var(--charcoal-dark); }
 
     .instructor-photo img {
       width: 100%;
@@ -558,27 +550,6 @@
       line-height: 1.3;
     }
 
-    .instructor-bio {
-      font-size: 0.78rem;
-      line-height: 1.75;
-      color: var(--charcoal);
-      max-width: 200px;
-      margin: 0.3rem auto 0;
-    }
-
-    .instructor-bio-toggle {
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--greige-dark);
-      cursor: pointer;
-      margin-top: -0.5rem;
-      border: none;
-      background: none;
-      font-family: 'Jost', sans-serif;
-    }
-    .instructor-bio-toggle:hover { color: var(--charcoal-dark); }
-
     .instructor-title {
       font-size: 0.75rem;
       letter-spacing: 0.1em;
@@ -600,131 +571,80 @@
       transition: border-color 0.2s, color 0.2s;
     }
 
-    .instructor-book:hover {
-      color: var(--text-dark);
-      border-color: var(--charcoal-dark);
+    .instructor-book:hover { border-color: var(--charcoal-dark); }
+
+    /* ───── TEAM BANNER ───── */
+    .team-banner {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto 3rem;
+      overflow: hidden;
+      position: relative;
     }
 
-    @media (max-width: 900px) {
-      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-      .instructors-section { padding: 5rem 1.5rem; }
+    .team-banner img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
-    /* ───── CLASSES ───── */
-    .classes-section {
-      background: var(--white);
-      padding: 7rem 4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 5rem;
-    }
-
-    .classes-intro { max-width: 650px; }
-
-    .classes-desc {
-      font-size: 1rem;
-      line-height: 1.9;
-      color: var(--charcoal-dark);
+    .team-banner-caption {
+      text-align: center;
       margin-top: 1rem;
-    }
-
-    .class-types {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1.5rem;
-    }
-
-    .class-card {
-      padding: 2rem 1.5rem;
-      background: var(--cream);
-      border-top: 2px solid var(--greige);
-      transition: border-color 0.2s;
-    }
-
-    .class-card.featured {
-      background: var(--charcoal-dark);
-      border-top-color: var(--charcoal-dark);
-    }
-
-    .class-card.featured h3,
-    .class-card.featured p { color: var(--greige-light); }
-
-    .class-card.featured .class-tag {
-      border-color: var(--greige-dark);
-      color: var(--greige-dark);
-    }
-
-    .class-card:hover { border-top-color: var(--charcoal-dark); }
-
-    .class-card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .class-card h3 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.4rem;
-      font-weight: 500;
-      color: var(--charcoal-dark);
-    }
-
-    .class-tag {
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      border: 1px solid var(--greige-dark);
-      padding: 0.2rem 0.6rem;
-      color: var(--charcoal);
-    }
-
-    .class-card p {
-      font-size: 0.88rem;
-      line-height: 1.75;
-      color: var(--charcoal);
-    }
-
-    .equipment-block { max-width: 900px; }
-
-    .equipment-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0;
-      margin-top: 1.5rem;
-      border-left: 1px solid var(--greige-light);
-      border-top: 1px solid var(--greige-light);
-    }
-
-    .equip-item {
-      padding: 1.2rem 1.5rem;
-      border-right: 1px solid var(--greige-light);
-      border-bottom: 1px solid var(--greige-light);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .equip-item span {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1rem;
       color: var(--greige-dark);
-      min-width: 24px;
     }
 
-    .equip-item p {
-      font-size: 0.85rem;
-      color: var(--charcoal-dark);
-      letter-spacing: 0.03em;
+    /* ───── GALLERY ───── */
+    .gallery-section {
+      background: var(--charcoal-dark);
+      padding: 0;
     }
 
-    @media (max-width: 900px) {
-      .class-types { grid-template-columns: 1fr 1fr; }
-      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
-      .classes-section { padding: 5rem 1.5rem; }
+    .gallery-strip {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      height: 480px;
     }
 
-    /* ───── BOOKING ───── */
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: transform 0.6s ease, filter 0.4s ease;
+      filter: brightness(0.88);
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.04);
+      filter: brightness(0.95);
+    }
+
+    .gallery-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(58,57,53,0.7) 0%, transparent 100%);
+      color: var(--greige-light);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .gallery-item:hover .gallery-caption { opacity: 1; }
+
+    /* ───── BOOKING CTA ───── */
     .booking-cta {
       background: var(--greige-light);
       text-align: center;
@@ -799,47 +719,6 @@
       letter-spacing: 0.1em;
     }
 
-    .instagram-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0.5rem;
-    }
-
-    .insta-placeholder {
-      aspect-ratio: 1;
-      background: var(--greige-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .insta-placeholder:hover { opacity: 0.85; }
-
-    .insta-icon {
-      font-size: 1.5rem;
-      opacity: 0.2;
-      color: var(--charcoal-dark);
-    }
-
-    .insta-label {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      background: rgba(58, 57, 53, 0.75);
-      color: white;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      padding: 0.5rem;
-      text-align: center;
-      transform: translateY(100%);
-      transition: transform 0.25s;
-    }
-
-    .insta-placeholder:hover .insta-label { transform: translateY(0); }
-
     /* ───── CONTACT / FOOTER ───── */
     .contact {
       background: var(--charcoal-dark);
@@ -899,186 +778,6 @@
     body.es [data-lang="en"] { display: none; }
     body.es [data-lang="es"] { display: block; }
     body.es span[data-lang="es"] { display: inline; }
-
-    /* ───── RESPONSIVE — TABLET (≤900px) ───── */
-    @media (max-width: 900px) {
-      nav { padding: 1rem 1.2rem; }
-      .nav-links { display: none; }
-      .hero { grid-template-columns: 1fr; min-height: auto; }
-      .hero-right { height: 52vw; max-height: 400px; }
-      .hero-left { padding: 6rem 1.5rem 3rem; }
-      .hero-content { max-width: 100%; }
-      .hero-content .hero-sub { max-width: 100%; }
-      .about, .founder { grid-template-columns: 1fr; gap: 3rem; }
-      .about-pillars { grid-template-columns: 1fr 1fr; }
-      .instagram-grid { grid-template-columns: repeat(2, 1fr); }
-      .contact { grid-template-columns: 1fr; gap: 2rem; }
-      .gallery-strip { grid-template-columns: 1fr 1fr; height: auto; }
-      .gallery-item { height: 240px; }
-      .team-banner { max-width: 100%; }
-      .class-types { grid-template-columns: 1fr 1fr; }
-      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
-      .classes-section { padding: 5rem 1.5rem; }
-      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-      .instructors-section { padding: 5rem 1.5rem; }
-    }
-
-    /* ───── RESPONSIVE — PHONE (≤480px) ───── */
-    @media (max-width: 480px) {
-
-      /* Nav */
-      nav { padding: 0.9rem 1.1rem; }
-      .nav-logo img { height: 36px; }
-
-      /* Hero — stacked, full-width photo first */
-      .hero { display: flex; flex-direction: column-reverse; }
-      .hero-right {
-        height: 60vw;
-        max-height: 280px;
-        width: 100%;
-      }
-      .hero-left {
-        padding: 2.2rem 1.2rem 2rem;
-        text-align: center;
-      }
-      .hero-content { text-align: center; }
-      .hero-content .hero-sub {
-        max-width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-        font-size: 0.92rem;
-      }
-      .hero-cta {
-        display: block;
-        width: 100%;
-        text-align: center;
-        padding: 1rem;
-        font-size: 0.78rem;
-      }
-      .hero-eyebrow { margin-bottom: 1rem; }
-
-      /* General sections */
-      section { padding: 3.5rem 1.2rem; }
-
-      /* About */
-      .about { padding: 3.5rem 1.2rem; gap: 2rem; }
-      .about-pillars { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
-      .pillar { padding: 1.2rem 1rem; }
-      .pillar h4 { font-size: 1rem; }
-      .pillar p { font-size: 0.8rem; }
-      .about-photo { aspect-ratio: 16/9; }
-      .about-visual { gap: 1rem; }
-
-      /* Founder */
-      .founder { padding: 3.5rem 1.2rem; gap: 2rem; }
-      .founder-visual { aspect-ratio: 4/5; }
-
-      /* Classes */
-      .classes-section { padding: 3.5rem 1.2rem; gap: 3rem; }
-      .class-types { grid-template-columns: 1fr; gap: 0.8rem; }
-      .class-card { padding: 1.4rem 1.2rem; }
-      .equipment-grid { grid-template-columns: 1fr 1fr; }
-      .equip-item { padding: 0.9rem 0.8rem; gap: 0.6rem; }
-
-      /* Instructors */
-      .instructors-section { padding: 3.5rem 1.2rem; gap: 2.5rem; }
-      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-      .instructor-photo { width: 110px; height: 110px; }
-      .instructor-info h4 { font-size: 0.95rem; }
-      .instructor-title { font-size: 0.65rem; }
-      .instructor-book { font-size: 0.68rem; margin-top: 0.5rem; }
-      .team-banner img { aspect-ratio: auto; max-height: 420px; object-fit: cover; object-position: center top; }
-
-      /* Gallery */
-      .gallery-strip { grid-template-columns: 1fr; }
-      .gallery-item { height: 220px; }
-      .gallery-caption { opacity: 1; transform: translateY(0); }
-
-      /* Booking CTA */
-      .booking-cta { padding: 3.5rem 1.2rem; }
-      .booking-cta h2 { font-size: clamp(1.6rem, 7vw, 2.4rem); margin-bottom: 0.8rem; }
-      .booking-cta p { margin-bottom: 1.8rem; font-size: 0.88rem; }
-      .btn-primary, .btn-outline {
-        display: block;
-        width: 100%;
-        text-align: center;
-        margin: 0 0 0.7rem 0;
-        padding: 0.95rem 1rem;
-      }
-
-      /* Instagram */
-      .instagram-section { padding: 3rem 1.2rem; }
-
-      /* Contact */
-      .contact { padding: 3.5rem 1.2rem; gap: 2rem; }
-      .contact-block a, .contact-block p { font-size: 0.95rem; }
-      .contact-block a { 
-        display: inline-block;
-        padding: 0.2rem 0;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-      }
-
-      /* Typography scale-down */
-      .section-title { font-size: clamp(1.8rem, 6vw, 2.8rem); }
-      .quote-section { padding: 4rem 1.5rem; }
-      .quote-section blockquote { font-size: clamp(1.3rem, 5vw, 2rem); }
-
-      /* Add bottom padding so sticky bar doesn't cover content */
-      body { padding-bottom: 68px; }
-    }
-
-    /* ───── STICKY BOTTOM BOOKING BAR (phone only) ───── */
-    .sticky-book-bar {
-      display: none;
-    }
-
-    @media (max-width: 480px) {
-      .sticky-book-bar {
-        display: flex;
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        z-index: 300;
-        background: var(--charcoal-dark);
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 1rem;
-        height: 60px;
-        box-shadow: 0 -2px 20px rgba(0,0,0,0.12);
-      }
-      .sticky-book-bar a.sticky-book-btn {
-        flex: 1;
-        text-align: center;
-        color: var(--white);
-        text-decoration: none;
-        font-family: 'Jost', sans-serif;
-        font-size: 0.75rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        padding: 0.5rem;
-      }
-      .sticky-book-bar .sticky-divider {
-        width: 1px;
-        height: 28px;
-        background: rgba(200,196,183,0.25);
-        flex-shrink: 0;
-        margin: 0 0.5rem;
-      }
-      .sticky-book-bar button.sticky-lang-btn {
-        background: none;
-        border: 1px solid rgba(200,196,183,0.4);
-        border-radius: 20px;
-        color: var(--greige-light);
-        font-family: 'Jost', sans-serif;
-        font-size: 0.7rem;
-        letter-spacing: 0.1em;
-        padding: 0.35rem 0.8rem;
-        cursor: pointer;
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-    }
 
     /* ───── HAMBURGER ───── */
     .hamburger {
@@ -1155,9 +854,125 @@
       color: var(--greige-dark);
     }
 
+    /* ───── STICKY BOTTOM BAR (mobile only) ───── */
+    .sticky-book-bar { display: none; }
+
+    @media (max-width: 480px) {
+      .sticky-book-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 300;
+        background: var(--charcoal-dark);
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1rem;
+        height: 60px;
+        box-shadow: 0 -2px 20px rgba(0,0,0,0.12);
+      }
+      .sticky-book-bar a.sticky-book-btn {
+        flex: 1;
+        text-align: center;
+        color: var(--white);
+        text-decoration: none;
+        font-family: 'Jost', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: 0.5rem;
+      }
+      .sticky-book-bar .sticky-divider {
+        width: 1px;
+        height: 28px;
+        background: rgba(200,196,183,0.25);
+        flex-shrink: 0;
+        margin: 0 0.5rem;
+      }
+      .sticky-book-bar button.sticky-lang-btn {
+        background: none;
+        border: 1px solid rgba(200,196,183,0.4);
+        border-radius: 20px;
+        color: var(--greige-light);
+        font-family: 'Jost', sans-serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+        padding: 0.35rem 0.8rem;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+    }
+
+    /* ───── RESPONSIVE — TABLET (≤900px) ───── */
     @media (max-width: 900px) {
+      nav { padding: 1rem 1.2rem; }
+      .nav-links { display: none; }
       .hamburger { display: flex; }
       .lang-toggle { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-right { height: 52vw; max-height: 400px; }
+      .hero-left { padding: 6rem 1.5rem 3rem; }
+      .hero-content { max-width: 100%; }
+      .hero-content .hero-sub { max-width: 100%; }
+      .about, .founder { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 1.5rem; }
+      .about-pillars { grid-template-columns: 1fr 1fr; }
+      .contact { grid-template-columns: 1fr; gap: 2rem; }
+      .gallery-strip { grid-template-columns: 1fr 1fr; height: auto; }
+      .gallery-item { height: 240px; }
+      .team-banner { max-width: 100%; }
+      .class-types { grid-template-columns: 1fr 1fr; }
+      .equipment-grid { grid-template-columns: repeat(2, 1fr); }
+      .classes-section { padding: 5rem 1.5rem; }
+      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+      .instructors-section { padding: 5rem 1.5rem; }
+    }
+
+    /* ───── RESPONSIVE — PHONE (≤480px) ───── */
+    @media (max-width: 480px) {
+      nav { padding: 0.9rem 1.1rem; }
+      .nav-logo img { height: 36px; }
+      .hero { display: flex; flex-direction: column-reverse; }
+      .hero-right { height: 60vw; max-height: 280px; width: 100%; }
+      .hero-left { padding: 2.2rem 1.2rem 2rem; text-align: center; }
+      .hero-content { text-align: center; }
+      .hero-content .hero-sub { max-width: 100%; margin-left: auto; margin-right: auto; font-size: 0.92rem; }
+      .hero-cta { display: block; width: 100%; text-align: center; padding: 1rem; font-size: 0.78rem; }
+      .hero-eyebrow { margin-bottom: 1rem; }
+      section { padding: 3.5rem 1.2rem; }
+      .about { padding: 3.5rem 1.2rem; gap: 2rem; }
+      .about-pillars { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+      .pillar { padding: 1.2rem 1rem; }
+      .pillar h4 { font-size: 1rem; }
+      .pillar p { font-size: 0.8rem; }
+      .about-photo { aspect-ratio: 16/9; }
+      .about-visual { gap: 1rem; }
+      .founder { padding: 3.5rem 1.2rem; gap: 2rem; }
+      .founder-visual { aspect-ratio: 4/5; }
+      .classes-section { padding: 3.5rem 1.2rem; gap: 3rem; }
+      .class-types { grid-template-columns: 1fr; gap: 0.8rem; }
+      .class-card { padding: 1.4rem 1.2rem; }
+      .equipment-grid { grid-template-columns: 1fr 1fr; }
+      .equip-item { padding: 0.9rem 0.8rem; gap: 0.6rem; }
+      .instructors-section { padding: 3.5rem 1.2rem; gap: 2.5rem; }
+      .instructors-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+      .instructor-photo { width: 110px; height: 110px; }
+      .instructor-info h4 { font-size: 0.95rem; }
+      .instructor-title { font-size: 0.65rem; }
+      .instructor-book { font-size: 0.68rem; margin-top: 0.5rem; }
+      .team-banner img { aspect-ratio: auto; max-height: 420px; object-fit: cover; object-position: center top; }
+      .gallery-strip { grid-template-columns: 1fr; }
+      .gallery-item { height: 220px; }
+      .gallery-caption { opacity: 1; transform: translateY(0); }
+      .booking-cta { padding: 3.5rem 1.2rem; }
+      .booking-cta h2 { font-size: clamp(1.6rem, 7vw, 2.4rem); margin-bottom: 0.8rem; }
+      .booking-cta p { margin-bottom: 1.8rem; font-size: 0.88rem; }
+      .btn-primary, .btn-outline { display: block; width: 100%; text-align: center; margin: 0 0 0.7rem 0; padding: 0.95rem 1rem; }
+      .instagram-section { padding: 3rem 1.2rem; }
+      .contact { padding: 3.5rem 1.2rem; gap: 2rem; }
+      .section-title { font-size: clamp(1.8rem, 6vw, 2.8rem); }
+      .quote-section { padding: 4rem 1.5rem; }
+      .quote-section blockquote { font-size: clamp(1.3rem, 5vw, 2rem); }
+      body { padding-bottom: 68px; }
     }
   </style>
 </head>
@@ -1218,7 +1033,6 @@
   <section class="hero">
     <div class="hero-left">
       <div class="hero-content">
-        <!-- 25 AÑOS LOGO -->
         <div class="anniversary-badge-inline">
           <img src="logo-25-white.jpeg" alt="25 Años de Excelencia — Aliza Pilates Studio" class="anniversary-logo-img" />
         </div>
@@ -1250,58 +1064,44 @@
       <p data-lang="en">Pilates is a physical conditioning method developed over seventy years ago by Joseph H. Pilates. Unlike other disciplines that isolate certain muscle groups, Pilates works the body as a complete system — emphasizing correct spinal alignment and controlled breathing.</p>
       <p data-lang="es">Pilates es un método de acondicionamiento físico desarrollado hace más de setenta años por Joseph H. Pilates. A diferencia de otras disciplinas que trabajan músculos de forma aislada, Pilates trabaja el cuerpo como un sistema completo, enfatizando la alineación correcta de la columna y la respiración controlada.</p>
       <p data-lang="en">Daily activities and sports develop certain muscle groups while leaving others behind. Pilates corrects these imbalances — eliminating the tension, fatigue, discomfort and pain they can cause.</p>
-      <p data-lang="es">Las actividades cotidianas y el deporte desarrollan ciertos grupos musculares dejando otros en el olvido. Pilates corrige esos desequilibrios, eliminando la tensión, la fatiga y el dolor que generan.</p>
+      <p data-lang="es">Las actividades cotidianas y el deporte desarrollan ciertos grupos musculares dejando otros en el olvido. Pilates corrige estos desequilibrios, eliminando la tensión, fatiga, molestia y dolor que pueden causar.</p>
+      <div class="about-pillars" style="margin-top:2rem;">
+        <div class="pillar">
+          <h4 data-lang="en">Authentic Method</h4>
+          <h4 data-lang="es">Método Auténtico</h4>
+          <p data-lang="en">Romana's Pilates Internacional — the direct lineage of Joseph Pilates.</p>
+          <p data-lang="es">Romana's Pilates Internacional — el linaje directo de Joseph Pilates.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">Original Equipment</h4>
+          <h4 data-lang="es">Equipo Original</h4>
+          <p data-lang="en">Authentic Gratz apparatus — the original manufacturer.</p>
+          <p data-lang="es">Aparatos Gratz originales — el fabricante original.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">Private Classes</h4>
+          <h4 data-lang="es">Clases Privadas</h4>
+          <p data-lang="en">Personalized attention from certified instructors.</p>
+          <p data-lang="es">Atención personalizada de instructoras certificadas.</p>
+        </div>
+        <div class="pillar">
+          <h4 data-lang="en">25 Years</h4>
+          <h4 data-lang="es">25 Años</h4>
+          <p data-lang="en">Panama City's premier Pilates studio since 2000.</p>
+          <p data-lang="es">El estudio de Pilates líder en Panamá desde el 2000.</p>
+        </div>
+      </div>
     </div>
     <div class="about-visual fade-in">
       <div class="about-photo">
-        <img src="studio-wide.jpg" alt="Estudio Aliza Pilates — equipos Gratz originales" />
-      </div>
-      <div class="about-pillars">
-        <div class="pillar">
-          <h4 data-lang="en">Concentration</h4>
-          <h4 data-lang="es">Concentración</h4>
-          <p data-lang="en">Every movement performed with full awareness and intention.</p>
-          <p data-lang="es">Cada movimiento realizado con plena conciencia e intención.</p>
-        </div>
-        <div class="pillar">
-          <h4 data-lang="en">Control</h4>
-          <h4 data-lang="es">Control</h4>
-          <p data-lang="en">Mastery over your body so it no longer dominates you.</p>
-          <p data-lang="es">El dominio sobre tu cuerpo para que no te domine a ti.</p>
-        </div>
-        <div class="pillar">
-          <h4 data-lang="en">Precision</h4>
-          <h4 data-lang="es">Precisión</h4>
-          <p data-lang="en">Quality over quantity — each movement counts.</p>
-          <p data-lang="es">Calidad sobre cantidad — cada movimiento cuenta.</p>
-        </div>
-        <div class="pillar">
-          <h4 data-lang="en">Breathing</h4>
-          <h4 data-lang="es">Respiración</h4>
-          <p data-lang="en">The breath connects mind and body for a truly effective workout.</p>
-          <p data-lang="es">La respiración conecta la mente con el cuerpo para un trabajo verdaderamente efectivo.</p>
-        </div>
-        <div class="pillar">
-          <h4 data-lang="en">Flow</h4>
-          <h4 data-lang="es">Flow</h4>
-          <p data-lang="en">Smooth, continuous movement that creates grace, efficiency and ease in the body.</p>
-          <p data-lang="es">Movimiento suave y continuo que genera gracia, eficiencia y ligereza en el cuerpo.</p>
-        </div>
-        <div class="pillar">
-          <h4 data-lang="en">Centralization</h4>
-          <h4 data-lang="es">Centralización</h4>
-          <p data-lang="en">All movement originates from the powerhouse — the core center of the body.</p>
-          <p data-lang="es">Todo movimiento se origina desde el powerhouse — el centro de fuerza del cuerpo.</p>
-        </div>
+        <img src="studio-reformers.jpg" alt="Equipos Gratz en Aliza Pilates Studio" />
       </div>
     </div>
   </section>
 
   <!-- QUOTE -->
   <section class="quote-section">
-    <blockquote>
-      "Te sentirás mejor en 10 sesiones, te verás mejor en 20 sesiones, y tendrás un cuerpo completamente nuevo en 30 sesiones."
-    </blockquote>
+    <blockquote>"Physical fitness is the first requisite of happiness."</blockquote>
     <cite>— Joseph Pilates</cite>
   </section>
 
@@ -1435,6 +1235,7 @@
       <p class="team-banner-caption" data-lang="es">El equipo de Aliza Pilates Studio</p>
       <p class="team-banner-caption" data-lang="en">The Aliza Pilates Studio team</p>
     </div>
+
     <div class="instructors-grid fade-in">
 
       <div class="instructor-card">
@@ -1465,7 +1266,7 @@
 
       <div class="instructor-card">
         <div class="instructor-photo">
-          <div class="instructor-initials">VC</div>
+          <img src="vicky-cohen.jpg" alt="Vicky Cohen Perez" />
         </div>
         <div class="instructor-info">
           <h4>Vicky Cohen Perez</h4>
@@ -1550,13 +1351,10 @@
       <br>
       <a href="https://instagram.com/alizapilatesstudio" target="_blank" style="font-size:0.85rem;color:var(--charcoal);text-decoration:none;letter-spacing:0.1em;">@alizapilatesstudio</a>
     </div>
-
-    <!-- Real Instagram Feed -->
     <div style="margin-top:2rem;">
       <script src="https://elfsightcdn.com/platform.js" async></script>
       <div class="elfsight-app-028510ba-74a5-4e71-8043-991aebb431d5" data-elfsight-app-lazy></div>
     </div>
-
     <div style="text-align:center;margin-top:2rem;">
       <p style="font-size:0.78rem;color:var(--greige-dark);letter-spacing:0.08em;" data-lang="es">Sigue a @alizapilatesstudio para ver nuestras últimas clases y novedades</p>
       <p style="font-size:0.78rem;color:var(--greige-dark);letter-spacing:0.08em;" data-lang="en">Follow @alizapilatesstudio to see our latest classes and updates</p>
@@ -1618,7 +1416,6 @@
       document.body.style.overflow = '';
     }
 
-    // Close menu on escape key
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeMobileMenu();
     });
